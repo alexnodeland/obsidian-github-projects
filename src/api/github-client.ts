@@ -186,6 +186,137 @@ export class GitHubClient {
     }
 
     /**
+     * Update an issue's title and/or body
+     */
+    async updateIssue(issueId: string, title?: string, body?: string): Promise<void> {
+        await this.query(MUTATIONS.UPDATE_ISSUE, {
+            input: {
+                id: issueId,
+                ...(title !== undefined && { title }),
+                ...(body !== undefined && { body })
+            }
+        });
+    }
+
+    /**
+     * Update a pull request's title and/or body
+     */
+    async updatePullRequest(prId: string, title?: string, body?: string): Promise<void> {
+        await this.query(MUTATIONS.UPDATE_PULL_REQUEST, {
+            input: {
+                id: prId,
+                ...(title !== undefined && { title }),
+                ...(body !== undefined && { body })
+            }
+        });
+    }
+
+    /**
+     * Add labels to an issue or PR
+     */
+    async addLabels(issueOrPrId: string, labelIds: string[]): Promise<void> {
+        await this.query(MUTATIONS.ADD_LABELS, {
+            input: {
+                labelableId: issueOrPrId,
+                labelIds
+            }
+        });
+    }
+
+    /**
+     * Remove labels from an issue or PR
+     */
+    async removeLabels(issueOrPrId: string, labelIds: string[]): Promise<void> {
+        await this.query(MUTATIONS.REMOVE_LABELS, {
+            input: {
+                labelableId: issueOrPrId,
+                labelIds
+            }
+        });
+    }
+
+    /**
+     * Add assignees to an issue or PR
+     */
+    async addAssignees(issueOrPrId: string, assigneeIds: string[]): Promise<void> {
+        await this.query(MUTATIONS.ADD_ASSIGNEES, {
+            input: {
+                assignableId: issueOrPrId,
+                assigneeIds
+            }
+        });
+    }
+
+    /**
+     * Remove assignees from an issue or PR
+     */
+    async removeAssignees(issueOrPrId: string, assigneeIds: string[]): Promise<void> {
+        await this.query(MUTATIONS.REMOVE_ASSIGNEES, {
+            input: {
+                assignableId: issueOrPrId,
+                assigneeIds
+            }
+        });
+    }
+
+    /**
+     * Close an issue
+     */
+    async closeIssue(issueId: string): Promise<void> {
+        await this.query(MUTATIONS.CLOSE_ISSUE, {
+            input: { issueId }
+        });
+    }
+
+    /**
+     * Reopen an issue
+     */
+    async reopenIssue(issueId: string): Promise<void> {
+        await this.query(MUTATIONS.REOPEN_ISSUE, {
+            input: { issueId }
+        });
+    }
+
+    /**
+     * Close a pull request
+     */
+    async closePullRequest(prId: string): Promise<void> {
+        await this.query(MUTATIONS.CLOSE_PULL_REQUEST, {
+            input: { pullRequestId: prId }
+        });
+    }
+
+    /**
+     * Reopen a pull request
+     */
+    async reopenPullRequest(prId: string): Promise<void> {
+        await this.query(MUTATIONS.REOPEN_PULL_REQUEST, {
+            input: { pullRequestId: prId }
+        });
+    }
+
+    /**
+     * Get repository labels (for autocomplete/selection)
+     */
+    async getRepositoryLabels(owner: string, repo: string): Promise<any[]> {
+        const data: any = await this.query(MUTATIONS.GET_REPOSITORY_LABELS, {
+            owner,
+            repo
+        });
+        return data.repository.labels.nodes;
+    }
+
+    /**
+     * Search for users (for assignee/reviewer autocomplete)
+     */
+    async searchUsers(query: string): Promise<any[]> {
+        const data: any = await this.query(MUTATIONS.SEARCH_USERS, {
+            query
+        });
+        return data.search.nodes;
+    }
+
+    /**
      * Get rate limit status
      */
     async getRateLimit(): Promise<RateLimit> {

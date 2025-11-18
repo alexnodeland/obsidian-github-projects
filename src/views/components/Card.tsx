@@ -53,8 +53,6 @@ export const Card = ({ card, onClick }: CardProps) => {
             data-card-id={card.id}
             onClick={handleClick}
         >
-            <div className="card-drag-handle">☰</div>
-
             {/* Header with title and PR badges */}
             <div className="card-header">
                 <div className="card-title">
