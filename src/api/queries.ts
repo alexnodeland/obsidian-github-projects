@@ -146,6 +146,13 @@ export const QUERIES = {
                                     createdAt
                                     updatedAt
                                     closedAt
+                                    repository {
+                                        owner {
+                                            login
+                                        }
+                                        name
+                                        nameWithOwner
+                                    }
                                     author {
                                         login
                                         avatarUrl
@@ -189,6 +196,13 @@ export const QUERIES = {
                                     reviewDecision
                                     additions
                                     deletions
+                                    repository {
+                                        owner {
+                                            login
+                                        }
+                                        name
+                                        nameWithOwner
+                                    }
                                     author {
                                         login
                                         avatarUrl

@@ -71,6 +71,13 @@ export const Card = ({ card, onClick }: CardProps) => {
                 </div>
             </div>
 
+            {/* Repository */}
+            {card.repository && (
+                <div className="card-repository" title={`Repository: ${card.repository.nameWithOwner}`}>
+                    📦 {card.repository.nameWithOwner}
+                </div>
+            )}
+
             {/* Labels */}
             {card.labels && card.labels.length > 0 && (
                 <div className="card-labels">

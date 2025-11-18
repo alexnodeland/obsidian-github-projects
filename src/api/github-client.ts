@@ -402,6 +402,13 @@ export class GitHubClient {
             assignees: this.transformAssignees(content.assignees?.nodes || []),
             fieldValues: this.transformFieldValues(raw.fieldValues?.nodes || []),
 
+            // Repository information
+            repository: content.repository ? {
+                owner: content.repository.owner?.login || '',
+                name: content.repository.name || '',
+                nameWithOwner: content.repository.nameWithOwner || ''
+            } : undefined,
+
             // Common metadata
             author: content.author ? {
                 login: content.author.login,

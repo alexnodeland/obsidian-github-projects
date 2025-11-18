@@ -9,10 +9,11 @@ export interface FilterOptions {
     states: string[];
     types: string[];
     milestone: string;
+    repositories: string[];
 }
 
 export interface SortOption {
-    field: 'updated' | 'created' | 'title' | 'comments' | 'reactions';
+    field: 'updated' | 'created' | 'title';
     direction: 'asc' | 'desc';
 }
 
@@ -23,6 +24,7 @@ interface ColumnFiltersProps {
     availableAssignees: string[];
     availableAuthors: string[];
     availableMilestones: string[];
+    availableRepositories: string[];
 }
 
 export const ColumnFilters = ({
@@ -31,10 +33,12 @@ export const ColumnFilters = ({
     availableLabels,
     availableAssignees,
     availableAuthors,
-    availableMilestones
+    availableMilestones,
+    availableRepositories
 }: ColumnFiltersProps) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [search, setSearch] = useState('');
+    const [selectedRepositories, setSelectedRepositories] = useState<string[]>([]);
     const [sortField, setSortField] = useState<SortOption['field']>('updated');
     const [sortDirection, setSortDirection] = useState<SortOption['direction']>('desc');
 
@@ -48,7 +52,25 @@ export const ColumnFilters = ({
             authors: [],
             states: [],
             types: [],
-            milestone: ''
+            milestone: '',
+            repositories: selectedRepositories
+        });
+    };
+
+    const handleRepositoryToggle = (repo: string) => {
+        const newRepos = selectedRepositories.includes(repo)
+            ? selectedRepositories.filter(r => r !== repo)
+            : [...selectedRepositories, repo];
+        setSelectedRepositories(newRepos);
+        onFilterChange({
+            search,
+            labels: [],
+            assignees: [],
+            authors: [],
+            states: [],
+            types: [],
+            milestone: '',
+            repositories: newRepos
         });
     };
 
@@ -102,20 +124,25 @@ export const ColumnFilters = ({
                             >
                                 Title {sortField === 'title' && (sortDirection === 'desc' ? '↓' : '↑')}
                             </button>
-                            <button
-                                className={`sort-option ${sortField === 'comments' ? 'active' : ''}`}
-                                onClick={() => handleSortChange('comments')}
-                            >
-                                Comments {sortField === 'comments' && (sortDirection === 'desc' ? '↓' : '↑')}
-                            </button>
-                            <button
-                                className={`sort-option ${sortField === 'reactions' ? 'active' : ''}`}
-                                onClick={() => handleSortChange('reactions')}
-                            >
-                                Reactions {sortField === 'reactions' && (sortDirection === 'desc' ? '↓' : '↑')}
-                            </button>
                         </div>
                     </div>
+
+                    {availableRepositories.length > 1 && (
+                        <div className="filter-section">
+                            <label className="filter-label">Filter by repository:</label>
+                            <div className="filter-chips">
+                                {availableRepositories.map(repo => (
+                                    <button
+                                        key={repo}
+                                        className={`filter-chip ${selectedRepositories.includes(repo) ? 'active' : ''}`}
+                                        onClick={() => handleRepositoryToggle(repo)}
+                                    >
+                                        {repo}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
         </div>

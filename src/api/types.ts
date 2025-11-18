@@ -33,6 +33,9 @@ export interface ProjectItem {
     assignees: Assignee[];
     fieldValues: Map<string, FieldValue>;
 
+    // Repository information
+    repository?: Repository;
+
     // Common metadata
     author?: Author;
     labels?: Label[];
@@ -73,6 +76,12 @@ export interface Label {
 export interface Milestone {
     title: string;
     dueOn?: string;
+}
+
+export interface Repository {
+    owner: string;
+    name: string;
+    nameWithOwner: string;
 }
 
 export interface FieldValue {

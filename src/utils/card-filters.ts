@@ -63,6 +63,13 @@ export function filterCards(cards: ProjectItem[], filters: FilterOptions): Proje
         );
     }
 
+    // Repository filter
+    if (filters.repositories.length > 0) {
+        filtered = filtered.filter(card =>
+            card.repository && filters.repositories.includes(card.repository.nameWithOwner)
+        );
+    }
+
     return filtered;
 }
 
@@ -84,12 +91,6 @@ export function sortCards(cards: ProjectItem[], sort: SortOption): ProjectItem[]
                 break;
             case 'title':
                 comparison = (a.title || '').localeCompare(b.title || '');
-                break;
-            case 'comments':
-                comparison = (a.commentCount || 0) - (b.commentCount || 0);
-                break;
-            case 'reactions':
-                comparison = (a.reactionCount || 0) - (b.reactionCount || 0);
                 break;
         }
 
@@ -117,6 +118,7 @@ export function extractFilterOptions(cards: ProjectItem[]) {
     const assignees = new Set<string>();
     const authors = new Set<string>();
     const milestones = new Set<string>();
+    const repositories = new Set<string>();
 
     cards.forEach(card => {
         // Extract labels
@@ -136,12 +138,18 @@ export function extractFilterOptions(cards: ProjectItem[]) {
         if (card.milestone) {
             milestones.add(card.milestone.title);
         }
+
+        // Extract repositories
+        if (card.repository) {
+            repositories.add(card.repository.nameWithOwner);
+        }
     });
 
     return {
         labels: Array.from(labels).sort(),
         assignees: Array.from(assignees).sort(),
         authors: Array.from(authors).sort(),
-        milestones: Array.from(milestones).sort()
+        milestones: Array.from(milestones).sort(),
+        repositories: Array.from(repositories).sort()
     };
 }

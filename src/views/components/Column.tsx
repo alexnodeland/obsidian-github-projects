@@ -22,7 +22,8 @@ export const Column = ({ column, onCardMove, onCardClick }: ColumnProps) => {
         authors: [],
         states: [],
         types: [],
-        milestone: ''
+        milestone: '',
+        repositories: []
     });
     const [sort, setSort] = useState<SortOption>({
         field: 'updated',
@@ -79,6 +80,7 @@ export const Column = ({ column, onCardMove, onCardClick }: ColumnProps) => {
                 availableAssignees={filterOptions.assignees}
                 availableAuthors={filterOptions.authors}
                 availableMilestones={filterOptions.milestones}
+                availableRepositories={filterOptions.repositories}
             />
 
             <div
