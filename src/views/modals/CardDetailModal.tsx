@@ -71,6 +71,16 @@ export class CardDetailModal extends Modal {
             });
         }
 
+        // Repository
+        if (this.card.repository) {
+            const repoSection = contentEl.createDiv({ cls: 'card-detail-section' });
+            repoSection.createEl('h3', { text: 'Repository' });
+            repoSection.createEl('p', {
+                text: this.card.repository.nameWithOwner,
+                cls: 'card-repository-text'
+            });
+        }
+
         // Labels
         if (this.card.labels && this.card.labels.length > 0) {
             const labelSection = contentEl.createDiv({ cls: 'card-detail-section' });
