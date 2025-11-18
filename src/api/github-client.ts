@@ -236,15 +236,22 @@ export class GitHubClient {
     private transformItem(raw: any): ProjectItem {
         const content = raw.content;
 
-        // Handle issues/PRs with null content (insufficient permissions or deleted)
+        // Handle issues/PRs with null content
+        // For items with no content, try to get title from fieldValues (common in Projects V2)
         if (!content) {
+            const fieldValues = this.transformFieldValues(raw.fieldValues?.nodes || []);
+            const titleField = fieldValues.get('Title');
+            const title = titleField?.value ? String(titleField.value) : '[Unavailable]';
+
             return {
                 id: raw.id,
                 type: raw.type === 'PULL_REQUEST' ? 'PullRequest' : (raw.type === 'ISSUE' ? 'Issue' : 'DraftIssue'),
-                title: '[Unavailable]',
-                body: 'Unable to load details. This may be due to insufficient token permissions (needs "repo" scope) or the item was deleted.',
+                title: title,
+                body: title === '[Unavailable]'
+                    ? 'Unable to load details. This may be due to insufficient token permissions (needs "repo" scope) or the item was deleted.'
+                    : '',
                 assignees: [],
-                fieldValues: this.transformFieldValues(raw.fieldValues?.nodes || []),
+                fieldValues: fieldValues,
                 labels: [],
                 commentCount: 0,
                 reactionCount: 0,
