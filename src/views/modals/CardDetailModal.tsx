@@ -75,10 +75,13 @@ export class CardDetailModal extends Modal {
         if (this.card.repository) {
             const repoSection = contentEl.createDiv({ cls: 'card-detail-section' });
             repoSection.createEl('h3', { text: 'Repository' });
-            repoSection.createEl('p', {
+            const repoUrl = `https://github.com/${this.card.repository.nameWithOwner}`;
+            const repoLink = repoSection.createEl('a', {
                 text: this.card.repository.nameWithOwner,
-                cls: 'card-repository-text'
+                href: repoUrl,
+                cls: 'external-link card-repository-link'
             });
+            repoLink.setAttr('target', '_blank');
         }
 
         // Labels

@@ -39,22 +39,29 @@ export const ColumnFilters = ({
     const [isExpanded, setIsExpanded] = useState(false);
     const [search, setSearch] = useState('');
     const [selectedRepositories, setSelectedRepositories] = useState<string[]>([]);
+    const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
+    const [selectedAssignees, setSelectedAssignees] = useState<string[]>([]);
     const [sortField, setSortField] = useState<SortOption['field']>('updated');
     const [sortDirection, setSortDirection] = useState<SortOption['direction']>('desc');
 
-    const handleSearchChange = (e: Event) => {
-        const value = (e.target as HTMLInputElement).value;
-        setSearch(value);
+    const updateFilters = (updates: Partial<FilterOptions>) => {
         onFilterChange({
-            search: value,
-            labels: [],
-            assignees: [],
+            search,
+            labels: selectedLabels,
+            assignees: selectedAssignees,
             authors: [],
             states: [],
             types: [],
             milestone: '',
-            repositories: selectedRepositories
+            repositories: selectedRepositories,
+            ...updates
         });
+    };
+
+    const handleSearchChange = (e: Event) => {
+        const value = (e.target as HTMLInputElement).value;
+        setSearch(value);
+        updateFilters({ search: value });
     };
 
     const handleRepositoryToggle = (repo: string) => {
@@ -62,16 +69,23 @@ export const ColumnFilters = ({
             ? selectedRepositories.filter(r => r !== repo)
             : [...selectedRepositories, repo];
         setSelectedRepositories(newRepos);
-        onFilterChange({
-            search,
-            labels: [],
-            assignees: [],
-            authors: [],
-            states: [],
-            types: [],
-            milestone: '',
-            repositories: newRepos
-        });
+        updateFilters({ repositories: newRepos });
+    };
+
+    const handleLabelToggle = (label: string) => {
+        const newLabels = selectedLabels.includes(label)
+            ? selectedLabels.filter(l => l !== label)
+            : [...selectedLabels, label];
+        setSelectedLabels(newLabels);
+        updateFilters({ labels: newLabels });
+    };
+
+    const handleAssigneeToggle = (assignee: string) => {
+        const newAssignees = selectedAssignees.includes(assignee)
+            ? selectedAssignees.filter(a => a !== assignee)
+            : [...selectedAssignees, assignee];
+        setSelectedAssignees(newAssignees);
+        updateFilters({ assignees: newAssignees });
     };
 
     const handleSortChange = (field: SortOption['field']) => {
@@ -126,6 +140,40 @@ export const ColumnFilters = ({
                             </button>
                         </div>
                     </div>
+
+                    {availableLabels.length > 0 && (
+                        <div className="filter-section">
+                            <label className="filter-label">Filter by label:</label>
+                            <div className="filter-chips">
+                                {availableLabels.map(label => (
+                                    <button
+                                        key={label}
+                                        className={`filter-chip ${selectedLabels.includes(label) ? 'active' : ''}`}
+                                        onClick={() => handleLabelToggle(label)}
+                                    >
+                                        {label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {availableAssignees.length > 0 && (
+                        <div className="filter-section">
+                            <label className="filter-label">Filter by assignee:</label>
+                            <div className="filter-chips">
+                                {availableAssignees.map(assignee => (
+                                    <button
+                                        key={assignee}
+                                        className={`filter-chip ${selectedAssignees.includes(assignee) ? 'active' : ''}`}
+                                        onClick={() => handleAssigneeToggle(assignee)}
+                                    >
+                                        {assignee}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     {availableRepositories.length > 1 && (
                         <div className="filter-section">
