@@ -25,8 +25,20 @@ mkdir -p "$VAULT_PATH/.obsidian/plugins"
 # Create plugin directory
 mkdir -p "$PLUGIN_DIR"
 
+# Check if node_modules exists
+if [ ! -d "$REPO_DIR/node_modules" ]; then
+    echo "📦 Installing dependencies..."
+    cd "$REPO_DIR"
+    npm install
+    if [ $? -ne 0 ]; then
+        echo "❌ npm install failed!"
+        exit 1
+    fi
+fi
+
 # Build the plugin first
 echo "Building plugin..."
+cd "$REPO_DIR"
 npm run build
 
 if [ $? -ne 0 ]; then
