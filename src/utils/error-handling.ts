@@ -41,7 +41,7 @@ export function displayError(error: Error): void {
         } else if (error.statusCode === 403) {
             message = 'Rate limit exceeded or insufficient permissions.';
         } else if (error.statusCode === 404) {
-            message = 'Project not found. Check your organization and project number.';
+            message = 'Resource not found. Check your organization name, project number, and access permissions.';
         } else {
             message = error.message;
         }
