@@ -10,9 +10,10 @@ interface ColumnProps {
     column: ColumnType;
     onCardMove: (cardId: string, toColumnId: string) => void;
     onCardClick: (card: ProjectItem) => void;
+    hideFilters?: boolean;
 }
 
-export const Column = ({ column, onCardMove, onCardClick }: ColumnProps) => {
+export const Column = ({ column, onCardMove, onCardClick, hideFilters = false }: ColumnProps) => {
     const columnRef = useRef<HTMLDivElement>(null);
     const sortableRef = useRef<Sortable | null>(null);
     const [filters, setFilters] = useState<FilterOptions>({
@@ -33,12 +34,16 @@ export const Column = ({ column, onCardMove, onCardClick }: ColumnProps) => {
     // Extract filter options from all cards in this column
     const filterOptions = useMemo(() => extractFilterOptions(column.cards), [column.cards]);
 
-    // Apply filters and sorting
+    // Apply filters and sorting - but only if not using global filters
     const displayedCards = useMemo(() => {
+        if (hideFilters) {
+            // When using global filters, cards are already filtered/sorted
+            return column.cards;
+        }
         let processed = filterCards(column.cards, filters);
         processed = sortCards(processed, sort);
         return processed;
-    }, [column.cards, filters, sort]);
+    }, [column.cards, filters, sort, hideFilters]);
 
     useEffect(() => {
         if (!columnRef.current) return;
@@ -70,18 +75,20 @@ export const Column = ({ column, onCardMove, onCardClick }: ColumnProps) => {
         <div className="kanban-column">
             <div className="column-header">
                 <span className="column-name">{column.name}</span>
-                <span className="column-count">{displayedCards.length} / {column.cards.length}</span>
+                <span className="column-count">{displayedCards.length}</span>
             </div>
 
-            <ColumnFilters
-                onFilterChange={setFilters}
-                onSortChange={setSort}
-                availableLabels={filterOptions.labels}
-                availableAssignees={filterOptions.assignees}
-                availableAuthors={filterOptions.authors}
-                availableMilestones={filterOptions.milestones}
-                availableRepositories={filterOptions.repositories}
-            />
+            {!hideFilters && (
+                <ColumnFilters
+                    onFilterChange={setFilters}
+                    onSortChange={setSort}
+                    availableLabels={filterOptions.labels}
+                    availableAssignees={filterOptions.assignees}
+                    availableAuthors={filterOptions.authors}
+                    availableMilestones={filterOptions.milestones}
+                    availableRepositories={filterOptions.repositories}
+                />
+            )}
 
             <div
                 className="column-cards"

@@ -1,7 +1,10 @@
 import { h } from 'preact';
-import { useState, useEffect } from 'preact/hooks';
+import { useState, useEffect, useRef } from 'preact/hooks';
 import { ProjectItem, Label, Assignee, Comment } from '../../api/types';
 import { GitHubClient } from '../../api/github-client';
+import { ResizeHandle } from './ResizeHandle';
+import { LoadingSpinner } from './LoadingSpinner';
+import { useToasts } from './Toast';
 
 interface CardDetailContentProps {
     card: ProjectItem;
@@ -11,11 +14,17 @@ interface CardDetailContentProps {
 }
 
 export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: CardDetailContentProps) => {
+    const { success, error: showError, info } = useToasts();
+
     const [isEditingTitle, setIsEditingTitle] = useState(false);
     const [editedTitle, setEditedTitle] = useState(card.title);
     const [isEditingBody, setIsEditingBody] = useState(false);
     const [editedBody, setEditedBody] = useState(card.body || '');
     const [isSaving, setIsSaving] = useState(false);
+
+    // Resizable layout state
+    const [sidebarWidth, setSidebarWidth] = useState(400);
+    const [separatorPosition, setSeparatorPosition] = useState(50); // percentage
 
     // Comments state
     const [comments, setComments] = useState<Comment[]>([]);
@@ -29,7 +38,9 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
     const [availableLabels, setAvailableLabels] = useState<Label[]>([]);
     const [isLoadingLabels, setIsLoadingLabels] = useState(false);
     const [newLabelName, setNewLabelName] = useState('');
+    const [newLabelColor, setNewLabelColor] = useState('#0969da');
     const [isCreatingLabel, setIsCreatingLabel] = useState(false);
+    const [labelSearchQuery, setLabelSearchQuery] = useState('');
 
     // Assignees editing state
     const [isEditingAssignees, setIsEditingAssignees] = useState(false);
@@ -38,6 +49,10 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
     const [availableUsers, setAvailableUsers] = useState<any[]>([]);
     const [isSearchingUsers, setIsSearchingUsers] = useState(false);
     const [searchDebounce, setSearchDebounce] = useState<NodeJS.Timeout | null>(null);
+
+    // Refs for resize containers
+    const mainContainerRef = useRef<HTMLDivElement>(null);
+    const descriptionSectionRef = useRef<HTMLDivElement>(null);
 
     // Load comments when modal opens
     useEffect(() => {
@@ -82,7 +97,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
 
         if (!card.contentId) {
             console.error('[CardDetail] No content ID available for this card');
-            alert('Cannot edit this card: No content ID available. This may be an unavailable item.');
+            showError('Cannot edit this card: No content ID available. This may be an unavailable item.');
             setIsEditingTitle(false);
             return;
         }
@@ -104,11 +119,11 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
             console.log('[CardDetail] Title update successful');
             onUpdate({ title: editedTitle });
             setIsEditingTitle(false);
+            success('Title updated successfully');
         } catch (error) {
             console.error('[CardDetail] Failed to update title:', error);
-            // Show error to user
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-            alert(`Failed to update title: ${errorMessage}\n\nThis may be due to insufficient token permissions. Ensure your GitHub token has the 'repo' scope.`);
+            showError(`Failed to update title: ${errorMessage}. This may be due to insufficient token permissions.`);
             setEditedTitle(card.title);
         } finally {
             setIsSaving(false);
@@ -136,11 +151,11 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
             }
             onUpdate({ body: editedBody });
             setIsEditingBody(false);
+            success('Description updated successfully');
         } catch (error) {
             console.error('Failed to update description:', error);
-            // Show error to user
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-            alert(`Failed to update description: ${errorMessage}\n\nThis may be due to insufficient token permissions. Ensure your GitHub token has the 'repo' scope.`);
+            showError(`Failed to update description: ${errorMessage}. This may be due to insufficient token permissions.`);
             setEditedBody(card.body || '');
         } finally {
             setIsSaving(false);
@@ -155,10 +170,11 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
             const comment = await githubClient.addComment(card.contentId, newComment);
             setComments([...comments, comment]);
             setNewComment('');
+            success('Comment added successfully');
         } catch (error) {
             console.error('Failed to add comment:', error);
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-            alert(`Failed to add comment: ${errorMessage}`);
+            showError(`Failed to add comment: ${errorMessage}`);
         } finally {
             setIsAddingComment(false);
         }
@@ -195,9 +211,10 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
             try {
                 await githubClient.removeLabels(card.contentId, [label.id]);
                 onUpdate({ labels: newLabels });
+                success('Label removed successfully');
             } catch (error) {
                 console.error('Failed to remove label:', error);
-                alert(`Failed to remove label: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                showError(`Failed to remove label: ${error instanceof Error ? error.message : 'Unknown error'}`);
                 // Revert on error
                 setEditedLabels(editedLabels);
             }
@@ -210,9 +227,10 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
             try {
                 await githubClient.addLabels(card.contentId, [label.id]);
                 onUpdate({ labels: newLabels });
+                success('Label added successfully');
             } catch (error) {
                 console.error('Failed to add label:', error);
-                alert(`Failed to add label: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                showError(`Failed to add label: ${error instanceof Error ? error.message : 'Unknown error'}`);
                 // Revert on error
                 setEditedLabels(editedLabels);
             }
@@ -224,20 +242,20 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
 
         // Check if label already exists
         if (editedLabels.some(l => l.name.toLowerCase() === newLabelName.trim().toLowerCase())) {
-            alert('A label with this name already exists');
+            showError('A label with this name already exists');
             return;
         }
 
         setIsCreatingLabel(true);
         try {
-            // Generate random color
-            const randomColor = Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+            // Use selected color (remove # if present)
+            const color = newLabelColor.replace('#', '');
 
             // First create the label in the repository
             const createdLabel = await githubClient.createLabel(
                 card.repository.id,
                 newLabelName.trim(),
-                randomColor
+                color
             );
 
             // Then add the label to the issue/PR
@@ -257,9 +275,11 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
             setAvailableLabels([...availableLabels, newLabel]);
 
             setNewLabelName('');
+            setNewLabelColor('#0969da');
+            success('Label created and added successfully');
         } catch (error) {
             console.error('Failed to create label:', error);
-            alert(`Failed to create label: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            showError(`Failed to create label: ${error instanceof Error ? error.message : 'Unknown error'}`);
         } finally {
             setIsCreatingLabel(false);
         }
@@ -309,9 +329,10 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
             try {
                 await githubClient.removeAssignees(card.contentId, [user.id]);
                 onUpdate({ assignees: newAssignees });
+                success('Assignee removed successfully');
             } catch (error) {
                 console.error('Failed to remove assignee:', error);
-                alert(`Failed to remove assignee: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                showError(`Failed to remove assignee: ${error instanceof Error ? error.message : 'Unknown error'}`);
                 // Revert on error
                 setEditedAssignees(editedAssignees);
             }
@@ -325,9 +346,10 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
             try {
                 await githubClient.addAssignees(card.contentId, [user.id]);
                 onUpdate({ assignees: newAssignees });
+                success('Assignee added successfully');
             } catch (error) {
                 console.error('Failed to add assignee:', error);
-                alert(`Failed to add assignee: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                showError(`Failed to add assignee: ${error instanceof Error ? error.message : 'Unknown error'}`);
                 // Revert on error
                 setEditedAssignees(editedAssignees);
             }
@@ -382,9 +404,27 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
         return badges;
     };
 
+    // Filter available labels based on search query
+    const filteredAvailableLabels = availableLabels.filter(
+        label => !editedLabels.some(l => l.name === label.name) &&
+            label.name.toLowerCase().includes(labelSearchQuery.toLowerCase())
+    );
+
+    // Predefined color palette for labels
+    const labelColors = [
+        '#0969da', '#1a7f37', '#8250df', '#bf3989', '#fb8500',
+        '#d73a49', '#6f42c1', '#0366d6', '#28a745', '#ffd33d'
+    ];
+
     return (
         <div className="card-detail-container">
-            <div className="card-detail-main">
+            <div
+                className="card-detail-main"
+                ref={mainContainerRef}
+                style={{
+                    gridTemplateColumns: `1fr ${sidebarWidth}px`
+                }}
+            >
                 {/* Left column - Main content */}
                 <div className="card-detail-left">
                     {/* Header with number and type */}
@@ -426,7 +466,13 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
                     </div>
 
                     {/* Editable Description */}
-                    <div className="card-detail-body-section">
+                    <div
+                        className="card-detail-body-section"
+                        ref={descriptionSectionRef}
+                        style={{
+                            flex: `0 0 ${separatorPosition}%`
+                        }}
+                    >
                         <h3>Description</h3>
                         {isEditingBody ? (
                             <div className="editable-field">
@@ -436,7 +482,9 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
                                     onChange={(e) => setEditedBody((e.target as HTMLTextAreaElement).value)}
                                     onBlur={handleSaveBody}
                                     onKeyDown={(e) => {
-                                        if (e.key === 'Escape') {
+                                        if (e.key === 'Enter' && e.ctrlKey) {
+                                            handleSaveBody();
+                                        } else if (e.key === 'Escape') {
                                             setEditedBody(card.body || '');
                                             setIsEditingBody(false);
                                         }
@@ -446,7 +494,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
                                     autoFocus
                                 />
                                 <div className="editable-field-hint">
-                                    Press Esc to cancel, click outside to save
+                                    {isSaving ? <LoadingSpinner size="small" /> : 'Ctrl+Enter or click outside to save, Esc to cancel'}
                                 </div>
                             </div>
                         ) : (
@@ -460,8 +508,26 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
                         )}
                     </div>
 
-                    {/* Separator */}
-                    <hr className="card-detail-separator" />
+                    {/* Draggable Separator */}
+                    <div className="card-detail-separator-container">
+                        <hr className="card-detail-separator" />
+                        <ResizeHandle
+                            direction="vertical"
+                            position="bottom"
+                            onResize={(delta) => {
+                                if (descriptionSectionRef.current) {
+                                    const container = descriptionSectionRef.current.parentElement;
+                                    if (container) {
+                                        const containerHeight = container.clientHeight;
+                                        const currentHeight = (separatorPosition / 100) * containerHeight;
+                                        const newHeight = currentHeight + delta.y;
+                                        const newPercentage = Math.max(20, Math.min(80, (newHeight / containerHeight) * 100));
+                                        setSeparatorPosition(newPercentage);
+                                    }
+                                }
+                            }}
+                        />
+                    </div>
 
                     {/* Comments Section */}
                     <div className="card-detail-comments-section">
@@ -513,8 +579,15 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
                     </div>
                 </div>
 
-                {/* Right column - Metadata */}
-                <div className="card-detail-right">
+                {/* Right column - Metadata with resizable width */}
+                <div className="card-detail-right" style={{ position: 'relative' }}>
+                    <ResizeHandle
+                        direction="horizontal"
+                        position="left"
+                        onResize={(delta) => {
+                            setSidebarWidth(Math.max(300, Math.min(600, sidebarWidth - delta.x)));
+                        }}
+                    />
                     {/* Status Badges */}
                     {renderBadges().length > 0 && (
                         <div className="card-detail-section">
@@ -540,7 +613,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
                         </div>
                     )}
 
-                    {/* Labels - Editable */}
+                    {/* Labels - Editable with reorganized UI */}
                     <div className="card-detail-section">
                         <div className="section-header-with-edit">
                             <h3>Labels</h3>
@@ -558,80 +631,141 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
                             </button>
                         </div>
 
-                        {editedLabels.length > 0 && (
-                            <div className="label-list">
-                                {editedLabels.map(label => (
-                                    <span
-                                        key={label.name}
-                                        className="label-badge"
-                                        style={{ backgroundColor: `#${label.color}` }}
-                                    >
-                                        {label.name}
-                                        {isEditingLabels && (
-                                            <button
-                                                className="label-remove"
-                                                onClick={() => handleToggleLabel(label)}
-                                                title="Remove label"
-                                            >
-                                                ×
-                                            </button>
-                                        )}
-                                    </span>
-                                ))}
-                            </div>
-                        )}
-
                         {isEditingLabels && (
                             <div className="label-selector">
-                                {/* Create new label */}
-                                <div className="create-label-form">
+                                {/* Search available labels */}
+                                {availableLabels.length > 5 && (
                                     <input
                                         type="text"
-                                        className="label-name-input"
-                                        placeholder="Create new label..."
-                                        value={newLabelName}
-                                        onChange={(e) => setNewLabelName((e.target as HTMLInputElement).value)}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter') handleCreateLabel();
-                                        }}
-                                        disabled={isCreatingLabel}
+                                        className="label-search-input"
+                                        placeholder="Search labels..."
+                                        value={labelSearchQuery}
+                                        onChange={(e) => setLabelSearchQuery((e.target as HTMLInputElement).value)}
                                     />
-                                    <button
-                                        className="create-label-button"
-                                        onClick={handleCreateLabel}
-                                        disabled={isCreatingLabel || !newLabelName.trim()}
-                                    >
-                                        {isCreatingLabel ? '...' : '+'}
-                                    </button>
+                                )}
+
+                                {/* Available labels - shown first */}
+                                {isLoadingLabels ? (
+                                    <div className="label-loading">
+                                        <LoadingSpinner size="small" />
+                                        <span>Loading labels...</span>
+                                    </div>
+                                ) : filteredAvailableLabels.length > 0 ? (
+                                    <div className="available-labels">
+                                        <label className="label-section-title">Available Labels:</label>
+                                        {filteredAvailableLabels.map(label => (
+                                            <button
+                                                key={label.name}
+                                                className="label-option"
+                                                style={{ backgroundColor: `#${label.color}` }}
+                                                onClick={() => handleToggleLabel(label)}
+                                                title={`Add ${label.name}`}
+                                            >
+                                                + {label.name}
+                                            </button>
+                                        ))}
+                                    </div>
+                                ) : availableLabels.length > 0 ? (
+                                    <div className="empty-field-small">All labels applied or filtered out</div>
+                                ) : null}
+
+                                {/* Create new label - styled as a blank label */}
+                                <div className="create-label-section">
+                                    <label className="label-section-title">Create New Label:</label>
+                                    <div className="create-label-form-styled">
+                                        <div
+                                            className="label-badge-input"
+                                            style={{ backgroundColor: newLabelColor }}
+                                        >
+                                            <input
+                                                type="text"
+                                                className="label-name-input-styled"
+                                                placeholder="Label name..."
+                                                value={newLabelName}
+                                                onChange={(e) => setNewLabelName((e.target as HTMLInputElement).value)}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter' && newLabelName.trim()) {
+                                                        handleCreateLabel();
+                                                    }
+                                                }}
+                                                disabled={isCreatingLabel}
+                                                autoComplete="off"
+                                            />
+                                        </div>
+                                        <div className="label-color-picker-container">
+                                            <input
+                                                type="color"
+                                                className="label-color-picker"
+                                                value={newLabelColor}
+                                                onChange={(e) => setNewLabelColor((e.target as HTMLInputElement).value)}
+                                                title="Choose label color"
+                                            />
+                                            <div className="label-color-presets">
+                                                {labelColors.map(color => (
+                                                    <button
+                                                        key={color}
+                                                        className="label-color-preset"
+                                                        style={{ backgroundColor: color }}
+                                                        onClick={() => setNewLabelColor(color)}
+                                                        title={color}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <button
+                                            className="create-label-button-styled"
+                                            onClick={handleCreateLabel}
+                                            disabled={isCreatingLabel || !newLabelName.trim()}
+                                        >
+                                            {isCreatingLabel ? <LoadingSpinner size="small" /> : '+ Create & Add'}
+                                        </button>
+                                    </div>
                                 </div>
 
-                                {/* Available labels */}
-                                {isLoadingLabels ? (
-                                    <div className="empty-field-small">Loading labels...</div>
-                                ) : (
-                                    <div className="available-labels">
-                                        {availableLabels
-                                            .filter(label => !editedLabels.some(l => l.name === label.name))
-                                            .map(label => (
-                                                <button
+                                {/* Applied labels - shown last */}
+                                {editedLabels.length > 0 && (
+                                    <div className="applied-labels-section">
+                                        <label className="label-section-title">Applied Labels:</label>
+                                        <div className="label-list">
+                                            {editedLabels.map(label => (
+                                                <span
                                                     key={label.name}
-                                                    className="label-option"
+                                                    className="label-badge"
                                                     style={{ backgroundColor: `#${label.color}` }}
-                                                    onClick={() => handleToggleLabel(label)}
                                                 >
-                                                    + {label.name}
-                                                </button>
+                                                    {label.name}
+                                                    <button
+                                                        className="label-remove"
+                                                        onClick={() => handleToggleLabel(label)}
+                                                        title="Remove label"
+                                                    >
+                                                        ×
+                                                    </button>
+                                                </span>
                                             ))}
-                                        {availableLabels.filter(label => !editedLabels.some(l => l.name === label.name)).length === 0 && (
-                                            <div className="empty-field-small">All labels applied</div>
-                                        )}
+                                        </div>
                                     </div>
                                 )}
                             </div>
                         )}
 
-                        {!isEditingLabels && editedLabels.length === 0 && (
-                            <div className="empty-field-small">No labels</div>
+                        {/* View mode - just show applied labels */}
+                        {!isEditingLabels && (
+                            editedLabels.length > 0 ? (
+                                <div className="label-list">
+                                    {editedLabels.map(label => (
+                                        <span
+                                            key={label.name}
+                                            className="label-badge"
+                                            style={{ backgroundColor: `#${label.color}` }}
+                                        >
+                                            {label.name}
+                                        </span>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="empty-field-small">No labels</div>
+                            )
                         )}
                     </div>
 
