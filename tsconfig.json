@@ -19,8 +19,7 @@
     ],
     "jsx": "react",
     "jsxFactory": "h",
-    "jsxFragmentFactory": "Fragment",
-    "types": ["node", "jest"]
+    "jsxFragmentFactory": "Fragment"
   },
   "include": [
     "src/**/*.ts",
@@ -28,6 +27,9 @@
   ],
   "exclude": [
     "node_modules",
-    "**/*.spec.ts"
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "**/__tests__",
+    "**/__mocks__"
   ]
 }
