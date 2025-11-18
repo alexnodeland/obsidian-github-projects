@@ -23,6 +23,17 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
     const [isLoadingComments, setIsLoadingComments] = useState(false);
     const [isAddingComment, setIsAddingComment] = useState(false);
 
+    // Labels editing state
+    const [isEditingLabels, setIsEditingLabels] = useState(false);
+    const [availableLabels, setAvailableLabels] = useState<Label[]>([]);
+    const [isLoadingLabels, setIsLoadingLabels] = useState(false);
+
+    // Assignees editing state
+    const [isEditingAssignees, setIsEditingAssignees] = useState(false);
+    const [assigneeSearch, setAssigneeSearch] = useState('');
+    const [availableUsers, setAvailableUsers] = useState<any[]>([]);
+    const [isSearchingUsers, setIsSearchingUsers] = useState(false);
+
     // Load comments when modal opens
     useEffect(() => {
         if (card.repository && card.number && card.type !== 'DraftIssue') {
@@ -145,6 +156,87 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
             alert(`Failed to add comment: ${errorMessage}`);
         } finally {
             setIsAddingComment(false);
+        }
+    };
+
+    const loadAvailableLabels = async () => {
+        if (!card.repository || isLoadingLabels || availableLabels.length > 0) return;
+
+        setIsLoadingLabels(true);
+        try {
+            const labels = await githubClient.getRepositoryLabels(
+                card.repository.owner,
+                card.repository.name
+            );
+            setAvailableLabels(labels);
+        } catch (error) {
+            console.error('Failed to load labels:', error);
+        } finally {
+            setIsLoadingLabels(false);
+        }
+    };
+
+    const handleToggleLabel = async (label: Label) => {
+        if (!card.contentId) return;
+
+        const hasLabel = card.labels?.some(l => l.name === label.name);
+
+        try {
+            if (hasLabel) {
+                // Remove label
+                const labelToRemove = card.labels?.find(l => l.name === label.name);
+                if (labelToRemove) {
+                    await githubClient.removeLabels(card.contentId, [(labelToRemove as any).id || label.name]);
+                    onUpdate({ labels: card.labels?.filter(l => l.name !== label.name) });
+                }
+            } else {
+                // Add label
+                await githubClient.addLabels(card.contentId, [(label as any).id || label.name]);
+                onUpdate({ labels: [...(card.labels || []), label] });
+            }
+        } catch (error) {
+            console.error('Failed to toggle label:', error);
+            alert(`Failed to ${hasLabel ? 'remove' : 'add'} label: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    };
+
+    const searchUsers = async (query: string) => {
+        if (!query.trim()) {
+            setAvailableUsers([]);
+            return;
+        }
+
+        setIsSearchingUsers(true);
+        try {
+            const users = await githubClient.searchUsers(query);
+            setAvailableUsers(users);
+        } catch (error) {
+            console.error('Failed to search users:', error);
+        } finally {
+            setIsSearchingUsers(false);
+        }
+    };
+
+    const handleToggleAssignee = async (user: any) => {
+        if (!card.contentId) return;
+
+        const isAssigned = card.assignees.some(a => a.login === user.login);
+
+        try {
+            if (isAssigned) {
+                // Remove assignee
+                await githubClient.removeAssignees(card.contentId, [user.id]);
+                onUpdate({ assignees: card.assignees.filter(a => a.login !== user.login) });
+            } else {
+                // Add assignee
+                await githubClient.addAssignees(card.contentId, [user.id]);
+                onUpdate({ assignees: [...card.assignees, { login: user.login, avatarUrl: user.avatarUrl }] });
+            }
+            setAssigneeSearch('');
+            setAvailableUsers([]);
+        } catch (error) {
+            console.error('Failed to toggle assignee:', error);
+            alert(`Failed to ${isAssigned ? 'remove' : 'add'} assignee: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     };
 
@@ -353,8 +445,20 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
 
                     {/* Labels - Editable */}
                     <div className="card-detail-section">
-                        <h3>Labels</h3>
-                        {card.labels && card.labels.length > 0 ? (
+                        <div className="section-header-with-edit">
+                            <h3>Labels</h3>
+                            <button
+                                className="edit-button"
+                                onClick={() => {
+                                    setIsEditingLabels(!isEditingLabels);
+                                    if (!isEditingLabels) loadAvailableLabels();
+                                }}
+                            >
+                                {isEditingLabels ? 'Done' : 'Edit'}
+                            </button>
+                        </div>
+
+                        {card.labels && card.labels.length > 0 && (
                             <div className="label-list">
                                 {card.labels.map(label => (
                                     <span
@@ -363,18 +467,64 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
                                         style={{ backgroundColor: `#${label.color}` }}
                                     >
                                         {label.name}
+                                        {isEditingLabels && (
+                                            <button
+                                                className="label-remove"
+                                                onClick={() => handleToggleLabel(label)}
+                                                title="Remove label"
+                                            >
+                                                ×
+                                            </button>
+                                        )}
                                     </span>
                                 ))}
                             </div>
-                        ) : (
+                        )}
+
+                        {isEditingLabels && (
+                            <div className="label-selector">
+                                {isLoadingLabels ? (
+                                    <div className="empty-field-small">Loading labels...</div>
+                                ) : (
+                                    <div className="available-labels">
+                                        {availableLabels
+                                            .filter(label => !card.labels?.some(l => l.name === label.name))
+                                            .map(label => (
+                                                <button
+                                                    key={label.name}
+                                                    className="label-option"
+                                                    style={{ backgroundColor: `#${label.color}` }}
+                                                    onClick={() => handleToggleLabel(label)}
+                                                >
+                                                    + {label.name}
+                                                </button>
+                                            ))}
+                                        {availableLabels.filter(label => !card.labels?.some(l => l.name === label.name)).length === 0 && (
+                                            <div className="empty-field-small">All labels applied</div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {!isEditingLabels && (!card.labels || card.labels.length === 0) && (
                             <div className="empty-field-small">No labels</div>
                         )}
                     </div>
 
                     {/* Assignees - Editable */}
                     <div className="card-detail-section">
-                        <h3>Assignees</h3>
-                        {card.assignees.length > 0 ? (
+                        <div className="section-header-with-edit">
+                            <h3>Assignees</h3>
+                            <button
+                                className="edit-button"
+                                onClick={() => setIsEditingAssignees(!isEditingAssignees)}
+                            >
+                                {isEditingAssignees ? 'Done' : 'Edit'}
+                            </button>
+                        </div>
+
+                        {card.assignees.length > 0 && (
                             <div className="assignee-list">
                                 {card.assignees.map(assignee => (
                                     <div key={assignee.login} className="assignee-item">
@@ -382,10 +532,58 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
                                             <img src={assignee.avatarUrl} alt={assignee.login} />
                                         )}
                                         <span>{assignee.login}</span>
+                                        {isEditingAssignees && (
+                                            <button
+                                                className="assignee-remove"
+                                                onClick={() => handleToggleAssignee(assignee)}
+                                                title="Remove assignee"
+                                            >
+                                                ×
+                                            </button>
+                                        )}
                                     </div>
                                 ))}
                             </div>
-                        ) : (
+                        )}
+
+                        {isEditingAssignees && (
+                            <div className="assignee-selector">
+                                <input
+                                    type="text"
+                                    className="assignee-search"
+                                    placeholder="Search users..."
+                                    value={assigneeSearch}
+                                    onChange={(e) => {
+                                        const value = (e.target as HTMLInputElement).value;
+                                        setAssigneeSearch(value);
+                                        searchUsers(value);
+                                    }}
+                                />
+                                {isSearchingUsers && (
+                                    <div className="empty-field-small">Searching...</div>
+                                )}
+                                {availableUsers.length > 0 && (
+                                    <div className="user-results">
+                                        {availableUsers.map(user => (
+                                            <button
+                                                key={user.id}
+                                                className="user-option"
+                                                onClick={() => handleToggleAssignee(user)}
+                                                disabled={card.assignees.some(a => a.login === user.login)}
+                                            >
+                                                {user.avatarUrl && (
+                                                    <img src={user.avatarUrl} alt={user.login} className="user-avatar" />
+                                                )}
+                                                <span>{user.login}</span>
+                                                {user.name && <span className="user-name">({user.name})</span>}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {!isEditingAssignees && card.assignees.length === 0 && (
                             <div className="empty-field-small">No assignees</div>
                         )}
                     </div>
