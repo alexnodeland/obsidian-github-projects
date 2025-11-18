@@ -201,6 +201,23 @@
   flex-shrink: 0;
 }
 
+/* Unavailable Badge */
+.card-unavailable-badge {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  background-color: rgba(245, 158, 11, 0.2);
+  color: rgb(245, 158, 11);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.kanban-card-unavailable {
+  opacity: 0.7;
+  border-color: rgba(245, 158, 11, 0.3) !important;
+}
+
 /* PR Draft Badge */
 .pr-draft-badge {
   padding: 2px 6px;

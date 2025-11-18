@@ -45,9 +45,11 @@ export const Card = ({ card, onClick }: CardProps) => {
         );
     };
 
+    const isUnavailable = card.title === '[Unavailable]';
+
     return (
         <div
-            className="kanban-card"
+            className={`kanban-card ${isUnavailable ? 'kanban-card-unavailable' : ''}`}
             data-card-id={card.id}
             onClick={handleClick}
         >
@@ -60,6 +62,9 @@ export const Card = ({ card, onClick }: CardProps) => {
                     {truncate(card.title, 80)}
                 </div>
                 <div className="card-header-badges">
+                    {isUnavailable && (
+                        <span className="card-unavailable-badge" title="Check token permissions">⚠️ UNAVAILABLE</span>
+                    )}
                     {card.isDraft && (
                         <span className="pr-draft-badge" title="Draft PR">DRAFT</span>
                     )}

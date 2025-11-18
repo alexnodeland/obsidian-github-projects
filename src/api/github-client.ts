@@ -235,49 +235,67 @@ export class GitHubClient {
      */
     private transformItem(raw: any): ProjectItem {
         const content = raw.content;
+
+        // Handle issues/PRs with null content (insufficient permissions or deleted)
+        if (!content) {
+            return {
+                id: raw.id,
+                type: raw.type === 'PULL_REQUEST' ? 'PullRequest' : (raw.type === 'ISSUE' ? 'Issue' : 'DraftIssue'),
+                title: '[Unavailable]',
+                body: 'Unable to load details. This may be due to insufficient token permissions (needs "repo" scope) or the item was deleted.',
+                assignees: [],
+                fieldValues: this.transformFieldValues(raw.fieldValues?.nodes || []),
+                labels: [],
+                commentCount: 0,
+                reactionCount: 0,
+                reviewers: [],
+                ciStatus: null
+            };
+        }
+
         const item: ProjectItem = {
             id: raw.id,
             type: raw.type || 'DraftIssue',
-            title: content?.title || 'Untitled',
-            url: content?.url,
-            number: content?.number,
-            state: content?.state,
-            body: content?.body || '',
-            assignees: this.transformAssignees(content?.assignees?.nodes || []),
+            title: content.title || 'Untitled',
+            url: content.url,
+            number: content.number,
+            state: content.state,
+            body: content.body || '',
+            assignees: this.transformAssignees(content.assignees?.nodes || []),
             fieldValues: this.transformFieldValues(raw.fieldValues?.nodes || []),
 
             // Common metadata
-            author: content?.author ? {
+            author: content.author ? {
                 login: content.author.login,
                 avatarUrl: content.author.avatarUrl
             } : undefined,
-            labels: content?.labels?.nodes?.map((label: any) => ({
+            labels: content.labels?.nodes?.map((label: any) => ({
                 name: label.name,
                 color: label.color
             })) || [],
-            milestone: content?.milestone ? {
+            milestone: content.milestone ? {
                 title: content.milestone.title,
                 dueOn: content.milestone.dueOn
             } : undefined,
-            createdAt: content?.createdAt,
-            updatedAt: content?.updatedAt,
-            closedAt: content?.closedAt,
-            commentCount: content?.comments?.totalCount || 0,
-            reactionCount: content?.reactions?.totalCount || 0,
+            createdAt: content.createdAt,
+            updatedAt: content.updatedAt,
+            closedAt: content.closedAt,
+            commentCount: content.comments?.totalCount || 0,
+            reactionCount: content.reactions?.totalCount || 0,
 
             // Pull Request specific
-            isDraft: content?.isDraft,
-            merged: content?.merged,
-            mergedAt: content?.mergedAt,
-            mergeable: content?.mergeable,
-            reviewDecision: content?.reviewDecision,
-            additions: content?.additions,
-            deletions: content?.deletions,
-            reviewers: content?.reviewRequests?.nodes?.map((rr: any) => ({
+            isDraft: content.isDraft,
+            merged: content.merged,
+            mergedAt: content.mergedAt,
+            mergeable: content.mergeable,
+            reviewDecision: content.reviewDecision,
+            additions: content.additions,
+            deletions: content.deletions,
+            reviewers: content.reviewRequests?.nodes?.map((rr: any) => ({
                 login: rr.requestedReviewer?.login,
                 avatarUrl: rr.requestedReviewer?.avatarUrl
             })).filter((r: any) => r.login) || [],
-            ciStatus: content?.commits?.nodes?.[0]?.commit?.statusCheckRollup?.state || null
+            ciStatus: content.commits?.nodes?.[0]?.commit?.statusCheckRollup?.state || null
         };
 
         return item;
