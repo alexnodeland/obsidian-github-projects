@@ -18,29 +18,46 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
     const [isSaving, setIsSaving] = useState(false);
 
     const handleSaveTitle = async () => {
+        console.log('[CardDetail] handleSaveTitle called', {
+            editedTitle,
+            currentTitle: card.title,
+            contentId: card.contentId,
+            cardType: card.type
+        });
+
         if (editedTitle === card.title || !editedTitle.trim()) {
+            console.log('[CardDetail] No changes or empty title, skipping save');
             setIsEditingTitle(false);
             setEditedTitle(card.title);
             return;
         }
 
         if (!card.contentId) {
-            console.error('No content ID available for this card');
+            console.error('[CardDetail] No content ID available for this card');
+            alert('Cannot edit this card: No content ID available. This may be an unavailable item.');
             setIsEditingTitle(false);
             return;
         }
 
         setIsSaving(true);
         try {
+            console.log('[CardDetail] Calling GitHub API to update title', {
+                contentId: card.contentId,
+                newTitle: editedTitle,
+                type: card.type
+            });
+
             if (card.type === 'Issue') {
                 await githubClient.updateIssue(card.contentId, editedTitle, undefined);
             } else if (card.type === 'PullRequest') {
                 await githubClient.updatePullRequest(card.contentId, editedTitle, undefined);
             }
+
+            console.log('[CardDetail] Title update successful');
             onUpdate({ title: editedTitle });
             setIsEditingTitle(false);
         } catch (error) {
-            console.error('Failed to update title:', error);
+            console.error('[CardDetail] Failed to update title:', error);
             // Show error to user
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             alert(`Failed to update title: ${errorMessage}\n\nThis may be due to insufficient token permissions. Ensure your GitHub token has the 'repo' scope.`);

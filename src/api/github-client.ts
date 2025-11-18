@@ -189,26 +189,30 @@ export class GitHubClient {
      * Update an issue's title and/or body
      */
     async updateIssue(issueId: string, title?: string, body?: string): Promise<void> {
-        await this.query(MUTATIONS.UPDATE_ISSUE, {
-            input: {
-                id: issueId,
-                ...(title !== undefined && { title }),
-                ...(body !== undefined && { body })
-            }
-        });
+        const input = {
+            id: issueId,
+            ...(title !== undefined && { title }),
+            ...(body !== undefined && { body })
+        };
+        console.log('[GitHubClient] updateIssue called with:', input);
+
+        const result = await this.query(MUTATIONS.UPDATE_ISSUE, { input });
+        console.log('[GitHubClient] updateIssue response:', result);
     }
 
     /**
      * Update a pull request's title and/or body
      */
     async updatePullRequest(prId: string, title?: string, body?: string): Promise<void> {
-        await this.query(MUTATIONS.UPDATE_PULL_REQUEST, {
-            input: {
-                id: prId,
-                ...(title !== undefined && { title }),
-                ...(body !== undefined && { body })
-            }
-        });
+        const input = {
+            pullRequestId: prId,  // GitHub API expects 'pullRequestId' not 'id'
+            ...(title !== undefined && { title }),
+            ...(body !== undefined && { body })
+        };
+        console.log('[GitHubClient] updatePullRequest called with:', input);
+
+        const result = await this.query(MUTATIONS.UPDATE_PULL_REQUEST, { input });
+        console.log('[GitHubClient] updatePullRequest response:', result);
     }
 
     /**
