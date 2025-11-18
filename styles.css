@@ -1954,31 +1954,21 @@
   border-top: 1px solid var(--background-modifier-border);
 }
 
-/* Separator Container for Draggable Handle */
-.card-detail-separator-container {
-  position: relative;
-  margin: 32px 0;
-  height: 1px;
-}
-
-.card-detail-separator-container .resize-handle {
-  height: 8px;
-  top: -4px;
-}
-
-/* Make the left column flexible for separator dragging */
+/* Make the left column flexible */
 .card-detail-left {
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* No scroll on the container itself */
+  overflow: hidden;
   height: 100%;
+  gap: 0;
 }
 
 .card-detail-body-section {
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* No scroll on description section */
-  min-height: 0; /* Allow flex shrinking */
+  overflow: hidden;
+  flex: 1; /* Takes up available space */
+  min-height: 0;
 }
 
 .card-detail-body-section h3,
@@ -1993,36 +1983,104 @@
   min-height: 0;
 }
 
+/* Collapsible Comments Section */
 .card-detail-comments-section {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden; /* Container doesn't scroll */
-  min-height: 0;
+  flex-shrink: 0; /* Don't shrink, stay at bottom */
+  border-top: 2px solid var(--background-modifier-border);
+  background-color: var(--background-secondary);
+  transition: all 0.3s ease;
 }
 
-.card-detail-comments-section h3 {
-  flex-shrink: 0; /* Keep header fixed */
+.card-detail-comments-section.collapsed {
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.comments-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.15s ease;
+}
+
+.comments-header-bar:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+.comments-header-bar h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.comments-toggle-button {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+  pointer-events: none; /* Click goes through to parent */
+}
+
+.comments-header-bar:hover .comments-toggle-button {
+  background-color: var(--background-modifier-border);
+  color: var(--text-normal);
+}
+
+.comments-expanded-content {
+  display: flex;
+  flex-direction: column;
+  max-height: 400px; /* Limit expansion height */
+  border-top: 1px solid var(--background-modifier-border);
+  animation: expand-comments 0.3s ease-out;
+}
+
+@keyframes expand-comments {
+  from {
+    max-height: 0;
+    opacity: 0;
+  }
+  to {
+    max-height: 400px;
+    opacity: 1;
+  }
 }
 
 .comments-list {
   overflow-y: auto; /* Only the comments list scrolls */
   flex: 1;
   min-height: 0;
-  padding: 4px 0;
+  padding: 12px 16px;
 }
 
-.comments-list .comments-loading,
+.comments-list .comments-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
 .comments-list .empty-field-small {
-  padding: 20px;
+  padding: 40px 20px;
   text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
 }
 
 .add-comment-form {
   flex-shrink: 0; /* Keep comment input fixed at bottom */
-  margin-top: 12px;
-  padding-top: 12px;
+  padding: 12px 16px 16px 16px;
   border-top: 1px solid var(--background-modifier-border);
+  background-color: var(--background-primary);
 }
 
 /* Global Filters */

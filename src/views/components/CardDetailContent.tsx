@@ -24,13 +24,13 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
 
     // Resizable layout state
     const [sidebarWidth, setSidebarWidth] = useState(400);
-    const [separatorPosition, setSeparatorPosition] = useState(50); // percentage
 
     // Comments state
     const [comments, setComments] = useState<Comment[]>([]);
     const [newComment, setNewComment] = useState('');
     const [isLoadingComments, setIsLoadingComments] = useState(false);
     const [isAddingComment, setIsAddingComment] = useState(false);
+    const [isCommentsExpanded, setIsCommentsExpanded] = useState(false);
 
     // Labels editing state
     const [isEditingLabels, setIsEditingLabels] = useState(false);
@@ -52,7 +52,6 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
 
     // Refs for resize containers
     const mainContainerRef = useRef<HTMLDivElement>(null);
-    const descriptionSectionRef = useRef<HTMLDivElement>(null);
 
     // Load comments when modal opens
     useEffect(() => {
@@ -466,13 +465,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
                     </div>
 
                     {/* Editable Description */}
-                    <div
-                        className="card-detail-body-section"
-                        ref={descriptionSectionRef}
-                        style={{
-                            flex: `0 0 ${separatorPosition}%`
-                        }}
-                    >
+                    <div className="card-detail-body-section">
                         <h3>Description</h3>
                         {isEditingBody ? (
                             <div className="editable-field">
@@ -508,77 +501,71 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
                         )}
                     </div>
 
-                    {/* Draggable Separator */}
-                    <div className="card-detail-separator-container">
-                        <hr className="card-detail-separator" />
-                        <ResizeHandle
-                            direction="vertical"
-                            position="bottom"
-                            onResize={(delta) => {
-                                if (descriptionSectionRef.current) {
-                                    const container = descriptionSectionRef.current.parentElement;
-                                    if (container) {
-                                        const containerHeight = container.clientHeight;
-                                        const currentHeight = (separatorPosition / 100) * containerHeight;
-                                        const newHeight = currentHeight + delta.y;
-                                        const newPercentage = Math.max(20, Math.min(80, (newHeight / containerHeight) * 100));
-                                        setSeparatorPosition(newPercentage);
-                                    }
-                                }
-                            }}
-                        />
-                    </div>
-
-                    {/* Comments Section */}
-                    <div className="card-detail-comments-section">
-                        <h3>Comments ({comments.length})</h3>
-
-                        {/* Scrollable comments list */}
-                        <div className="comments-list">
-                            {isLoadingComments ? (
-                                <div className="comments-loading">Loading comments...</div>
-                            ) : comments.length > 0 ? (
-                                <Fragment>
-                                    {comments.map(comment => (
-                                        <div key={comment.id} className="comment-item">
-                                            <div className="comment-header">
-                                                {comment.author?.avatarUrl && (
-                                                    <img src={comment.author.avatarUrl} alt={comment.author.login} className="comment-avatar" />
-                                                )}
-                                                <div className="comment-meta">
-                                                    <span className="comment-author">{comment.author?.login || 'Unknown'}</span>
-                                                    <span className="comment-date">
-                                                        {new Date(comment.createdAt).toLocaleString()}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div className="comment-body">{comment.body}</div>
-                                        </div>
-                                    ))}
-                                </Fragment>
-                            ) : (
-                                <div className="empty-field-small">No comments yet</div>
-                            )}
-                        </div>
-
-                        {/* Fixed Add Comment Form at bottom */}
-                        <div className="add-comment-form">
-                            <textarea
-                                className="comment-input"
-                                placeholder="Write a comment..."
-                                value={newComment}
-                                onChange={(e) => setNewComment((e.target as HTMLTextAreaElement).value)}
-                                rows={3}
-                                disabled={isAddingComment}
-                            />
-                            <button
-                                className="comment-submit-button"
-                                onClick={handleAddComment}
-                                disabled={isAddingComment || !newComment.trim()}
-                            >
-                                {isAddingComment ? <LoadingSpinner size="small" /> : 'Add Comment'}
+                    {/* Collapsible Comments Section */}
+                    <div className={`card-detail-comments-section ${isCommentsExpanded ? 'expanded' : 'collapsed'}`}>
+                        <div
+                            className="comments-header-bar"
+                            onClick={() => setIsCommentsExpanded(!isCommentsExpanded)}
+                        >
+                            <h3>Comments ({comments.length})</h3>
+                            <button className="comments-toggle-button" title={isCommentsExpanded ? 'Collapse comments' : 'Expand comments'}>
+                                {isCommentsExpanded ? '▼' : '▶'}
                             </button>
                         </div>
+
+                        {isCommentsExpanded && (
+                            <div className="comments-expanded-content">
+                                {/* Scrollable comments list */}
+                                <div className="comments-list">
+                                    {isLoadingComments ? (
+                                        <div className="comments-loading">
+                                            <LoadingSpinner size="medium" />
+                                            <span>Loading comments...</span>
+                                        </div>
+                                    ) : comments.length > 0 ? (
+                                        <Fragment>
+                                            {comments.map(comment => (
+                                                <div key={comment.id} className="comment-item">
+                                                    <div className="comment-header">
+                                                        {comment.author?.avatarUrl && (
+                                                            <img src={comment.author.avatarUrl} alt={comment.author.login} className="comment-avatar" />
+                                                        )}
+                                                        <div className="comment-meta">
+                                                            <span className="comment-author">{comment.author?.login || 'Unknown'}</span>
+                                                            <span className="comment-date">
+                                                                {new Date(comment.createdAt).toLocaleString()}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="comment-body">{comment.body}</div>
+                                                </div>
+                                            ))}
+                                        </Fragment>
+                                    ) : (
+                                        <div className="empty-field-small">No comments yet. Be the first to comment!</div>
+                                    )}
+                                </div>
+
+                                {/* Fixed Add Comment Form at bottom */}
+                                <div className="add-comment-form">
+                                    <textarea
+                                        className="comment-input"
+                                        placeholder="Write a comment..."
+                                        value={newComment}
+                                        onChange={(e) => setNewComment((e.target as HTMLTextAreaElement).value)}
+                                        rows={3}
+                                        disabled={isAddingComment}
+                                    />
+                                    <button
+                                        className="comment-submit-button"
+                                        onClick={handleAddComment}
+                                        disabled={isAddingComment || !newComment.trim()}
+                                    >
+                                        {isAddingComment ? <LoadingSpinner size="small" /> : 'Add Comment'}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
