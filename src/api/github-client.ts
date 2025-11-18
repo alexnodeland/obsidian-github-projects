@@ -75,8 +75,9 @@ export class GitHubClient {
      */
     async fetchProject(owner: string, number: number, ownerType: 'user' | 'organization' = 'organization'): Promise<Project> {
         if (ownerType === 'user') {
-            const data: any = await this.query(QUERIES.GET_USER_PROJECT, { user: owner, number });
-            return this.transformProject(data.user.projectV2);
+            // For personal projects, use viewer (authenticated user) instead of user(login:)
+            const data: any = await this.query(QUERIES.GET_USER_PROJECT, { number });
+            return this.transformProject(data.viewer.projectV2);
         } else {
             const data: any = await this.query(QUERIES.GET_PROJECT, { org: owner, number });
             return this.transformProject(data.organization.projectV2);

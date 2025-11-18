@@ -52,8 +52,8 @@ export const QUERIES = {
     `,
 
     GET_USER_PROJECT: `
-        query($user: String!, $number: Int!) {
-            user(login: $user) {
+        query($number: Int!) {
+            viewer {
                 projectV2(number: $number) {
                     id
                     title

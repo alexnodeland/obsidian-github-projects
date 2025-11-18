@@ -121,20 +121,29 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
                     this.display(); // Refresh to update description
                 }));
 
-        const ownerDesc = this.plugin.settings.ownerType === 'user'
-            ? 'Your GitHub username (e.g., "octocat")'
-            : 'GitHub organization name (e.g., "octo-org")';
-
-        new Setting(containerEl)
-            .setName(this.plugin.settings.ownerType === 'user' ? 'Username' : 'Organization')
-            .setDesc(ownerDesc)
-            .addText(text => text
-                .setPlaceholder(this.plugin.settings.ownerType === 'user' ? 'octocat' : 'octo-org')
-                .setValue(this.plugin.settings.owner)
-                .onChange(async (value) => {
-                    this.plugin.settings.owner = value;
-                    await this.plugin.saveSettings();
-                }));
+        // Only show owner field for organizations
+        if (this.plugin.settings.ownerType === 'organization') {
+            new Setting(containerEl)
+                .setName('Organization')
+                .setDesc('GitHub organization name (e.g., "octo-org")')
+                .addText(text => text
+                    .setPlaceholder('octo-org')
+                    .setValue(this.plugin.settings.owner)
+                    .onChange(async (value) => {
+                        this.plugin.settings.owner = value;
+                        await this.plugin.saveSettings();
+                    }));
+        } else {
+            // For personal projects, show info message
+            const infoEl = containerEl.createDiv({ cls: 'setting-item-description' });
+            infoEl.style.marginTop = '12px';
+            infoEl.style.marginBottom = '12px';
+            infoEl.innerHTML = `
+                <strong>ℹ️ Personal Projects:</strong><br>
+                Personal projects are accessed using your authenticated token.<br>
+                No username configuration needed.
+            `;
+        }
 
         const projectUrlExample = this.plugin.settings.ownerType === 'user'
             ? 'github.com/users/octocat/projects/5'
