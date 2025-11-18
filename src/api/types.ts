@@ -46,6 +46,7 @@ export interface ProjectItem {
     closedAt?: string;
     commentCount?: number;
     reactionCount?: number;
+    comments?: Comment[];
 
     // Pull Request specific
     isDraft?: boolean;
@@ -83,6 +84,14 @@ export interface Repository {
     owner: string;
     name: string;
     nameWithOwner: string;
+}
+
+export interface Comment {
+    id: string;
+    body: string;
+    author: Author;
+    createdAt: string;
+    updatedAt?: string;
 }
 
 export interface FieldValue {

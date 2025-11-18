@@ -329,6 +329,29 @@ export class GitHubClient {
     }
 
     /**
+     * Get comments for an issue or pull request
+     */
+    async getComments(owner: string, repo: string, number: number, type: 'Issue' | 'PullRequest'): Promise<any[]> {
+        const query = type === 'Issue' ? MUTATIONS.GET_ISSUE_COMMENTS : MUTATIONS.GET_PR_COMMENTS;
+        const data: any = await this.query(query, { owner, repo, number });
+        const itemType = type === 'Issue' ? 'issue' : 'pullRequest';
+        return data.repository[itemType].comments.nodes;
+    }
+
+    /**
+     * Add a comment to an issue or pull request
+     */
+    async addComment(subjectId: string, body: string): Promise<any> {
+        const data: any = await this.query(MUTATIONS.ADD_COMMENT, {
+            input: {
+                subjectId,
+                body
+            }
+        });
+        return data.addComment.commentEdge.node;
+    }
+
+    /**
      * Transform raw project data to our Project type
      */
     private transformProject(raw: any): Project {

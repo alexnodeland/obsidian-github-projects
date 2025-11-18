@@ -1,6 +1,6 @@
 import { h } from 'preact';
-import { useState } from 'preact/hooks';
-import { ProjectItem, Label, Assignee } from '../../api/types';
+import { useState, useEffect } from 'preact/hooks';
+import { ProjectItem, Label, Assignee, Comment } from '../../api/types';
 import { GitHubClient } from '../../api/github-client';
 
 interface CardDetailContentProps {
@@ -16,6 +16,38 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
     const [isEditingBody, setIsEditingBody] = useState(false);
     const [editedBody, setEditedBody] = useState(card.body || '');
     const [isSaving, setIsSaving] = useState(false);
+
+    // Comments state
+    const [comments, setComments] = useState<Comment[]>([]);
+    const [newComment, setNewComment] = useState('');
+    const [isLoadingComments, setIsLoadingComments] = useState(false);
+    const [isAddingComment, setIsAddingComment] = useState(false);
+
+    // Load comments when modal opens
+    useEffect(() => {
+        if (card.repository && card.number && card.type !== 'DraftIssue') {
+            loadComments();
+        }
+    }, []);
+
+    const loadComments = async () => {
+        if (!card.repository || !card.number) return;
+
+        setIsLoadingComments(true);
+        try {
+            const commentsData = await githubClient.getComments(
+                card.repository.owner,
+                card.repository.name,
+                card.number,
+                card.type
+            );
+            setComments(commentsData);
+        } catch (error) {
+            console.error('Failed to load comments:', error);
+        } finally {
+            setIsLoadingComments(false);
+        }
+    };
 
     const handleSaveTitle = async () => {
         console.log('[CardDetail] handleSaveTitle called', {
@@ -96,6 +128,23 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
             setEditedBody(card.body || '');
         } finally {
             setIsSaving(false);
+        }
+    };
+
+    const handleAddComment = async () => {
+        if (!newComment.trim() || !card.contentId) return;
+
+        setIsAddingComment(true);
+        try {
+            const comment = await githubClient.addComment(card.contentId, newComment);
+            setComments([...comments, comment]);
+            setNewComment('');
+        } catch (error) {
+            console.error('Failed to add comment:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            alert(`Failed to add comment: ${errorMessage}`);
+        } finally {
+            setIsAddingComment(false);
         }
     };
 
@@ -220,6 +269,58 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
                                 {card.body || <span className="empty-field">No description provided. Click to add one.</span>}
                             </div>
                         )}
+                    </div>
+
+                    {/* Separator */}
+                    <hr className="card-detail-separator" />
+
+                    {/* Comments Section */}
+                    <div className="card-detail-comments-section">
+                        <h3>Comments ({comments.length})</h3>
+
+                        {isLoadingComments ? (
+                            <div className="comments-loading">Loading comments...</div>
+                        ) : comments.length > 0 ? (
+                            <div className="comments-list">
+                                {comments.map(comment => (
+                                    <div key={comment.id} className="comment-item">
+                                        <div className="comment-header">
+                                            {comment.author?.avatarUrl && (
+                                                <img src={comment.author.avatarUrl} alt={comment.author.login} className="comment-avatar" />
+                                            )}
+                                            <div className="comment-meta">
+                                                <span className="comment-author">{comment.author?.login || 'Unknown'}</span>
+                                                <span className="comment-date">
+                                                    {new Date(comment.createdAt).toLocaleString()}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="comment-body">{comment.body}</div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="empty-field-small">No comments yet</div>
+                        )}
+
+                        {/* Add Comment Form */}
+                        <div className="add-comment-form">
+                            <textarea
+                                className="comment-input"
+                                placeholder="Write a comment..."
+                                value={newComment}
+                                onChange={(e) => setNewComment((e.target as HTMLTextAreaElement).value)}
+                                rows={3}
+                                disabled={isAddingComment}
+                            />
+                            <button
+                                className="comment-submit-button"
+                                onClick={handleAddComment}
+                                disabled={isAddingComment || !newComment.trim()}
+                            >
+                                {isAddingComment ? 'Adding...' : 'Add Comment'}
+                            </button>
+                        </div>
                     </div>
                 </div>
 

@@ -337,5 +337,66 @@ export const MUTATIONS = {
                 }
             }
         }
+    `,
+
+    GET_ISSUE_COMMENTS: `
+        query GetIssueComments($owner: String!, $repo: String!, $number: Int!) {
+            repository(owner: $owner, name: $repo) {
+                issue(number: $number) {
+                    comments(first: 100, orderBy: {field: UPDATED_AT, direction: ASC}) {
+                        nodes {
+                            id
+                            body
+                            createdAt
+                            updatedAt
+                            author {
+                                login
+                                avatarUrl
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    `,
+
+    GET_PR_COMMENTS: `
+        query GetPRComments($owner: String!, $repo: String!, $number: Int!) {
+            repository(owner: $owner, name: $repo) {
+                pullRequest(number: $number) {
+                    comments(first: 100, orderBy: {field: UPDATED_AT, direction: ASC}) {
+                        nodes {
+                            id
+                            body
+                            createdAt
+                            updatedAt
+                            author {
+                                login
+                                avatarUrl
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    `,
+
+    ADD_COMMENT: `
+        mutation AddComment($input: AddCommentInput!) {
+            addComment(input: $input) {
+                commentEdge {
+                    node {
+                        id
+                        body
+                        createdAt
+                        updatedAt
+                        author {
+                            login
+                            avatarUrl
+                        }
+                    }
+                }
+            }
+        }
     `
 };
