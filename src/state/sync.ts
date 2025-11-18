@@ -1,6 +1,7 @@
 import { Notice } from 'obsidian';
 import { GitHubClient } from '../api/github-client';
 import { ProjectState } from './project-state';
+import { APICache } from './cache';
 import { displayError } from '../utils/error-handling';
 
 interface PendingUpdate {
@@ -21,7 +22,8 @@ export class SyncManager {
     constructor(
         private client: GitHubClient,
         private state: ProjectState,
-        private projectId: string
+        private projectId: string,
+        private cache: APICache
     ) {}
 
     /**
@@ -66,7 +68,10 @@ export class SyncManager {
             // First, push pending updates
             await this.pushPendingUpdates();
 
-            // Then, fetch latest from GitHub
+            // Invalidate the items cache to ensure fresh data
+            this.cache.invalidate(`items-${this.projectId}`);
+
+            // Then, fetch latest from GitHub (bypasses cache)
             const items = await this.client.fetchProjectItems(this.projectId);
             this.state.setItems(items);
 
@@ -128,6 +133,8 @@ export class SyncManager {
      */
     async forceRefresh(): Promise<void> {
         this.pendingUpdates.clear();
+        // Invalidate all cache to force completely fresh fetch
+        this.cache.invalidate();
         await this.sync();
         new Notice('Project refreshed from GitHub');
     }

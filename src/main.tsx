@@ -154,7 +154,7 @@ export default class GitHubProjectsPlugin extends Plugin {
 
             // Initialize sync manager
             if (!this.syncManager) {
-                this.syncManager = new SyncManager(client, this.projectState, project.id);
+                this.syncManager = new SyncManager(client, this.projectState, project.id, this.cache);
 
                 // Start auto-sync if enabled
                 if (this.settings.refreshInterval > 0) {
