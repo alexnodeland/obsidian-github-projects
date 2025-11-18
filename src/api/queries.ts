@@ -143,11 +143,34 @@ export const QUERIES = {
                                     url
                                     state
                                     body
+                                    createdAt
+                                    updatedAt
+                                    closedAt
+                                    author {
+                                        login
+                                        avatarUrl
+                                    }
                                     assignees(first: 5) {
                                         nodes {
                                             login
                                             avatarUrl
                                         }
+                                    }
+                                    labels(first: 10) {
+                                        nodes {
+                                            name
+                                            color
+                                        }
+                                    }
+                                    milestone {
+                                        title
+                                        dueOn
+                                    }
+                                    comments {
+                                        totalCount
+                                    }
+                                    reactions {
+                                        totalCount
                                     }
                                 }
                                 ... on PullRequest {
@@ -156,10 +179,59 @@ export const QUERIES = {
                                     url
                                     state
                                     body
+                                    createdAt
+                                    updatedAt
+                                    closedAt
+                                    mergedAt
+                                    isDraft
+                                    merged
+                                    mergeable
+                                    reviewDecision
+                                    additions
+                                    deletions
+                                    author {
+                                        login
+                                        avatarUrl
+                                    }
                                     assignees(first: 5) {
                                         nodes {
                                             login
                                             avatarUrl
+                                        }
+                                    }
+                                    labels(first: 10) {
+                                        nodes {
+                                            name
+                                            color
+                                        }
+                                    }
+                                    milestone {
+                                        title
+                                        dueOn
+                                    }
+                                    comments {
+                                        totalCount
+                                    }
+                                    reactions {
+                                        totalCount
+                                    }
+                                    reviewRequests(first: 5) {
+                                        nodes {
+                                            requestedReviewer {
+                                                ... on User {
+                                                    login
+                                                    avatarUrl
+                                                }
+                                            }
+                                        }
+                                    }
+                                    commits(last: 1) {
+                                        nodes {
+                                            commit {
+                                                statusCheckRollup {
+                                                    state
+                                                }
+                                            }
                                         }
                                     }
                                 }

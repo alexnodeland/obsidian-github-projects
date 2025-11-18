@@ -244,7 +244,40 @@ export class GitHubClient {
             state: content?.state,
             body: content?.body || '',
             assignees: this.transformAssignees(content?.assignees?.nodes || []),
-            fieldValues: this.transformFieldValues(raw.fieldValues?.nodes || [])
+            fieldValues: this.transformFieldValues(raw.fieldValues?.nodes || []),
+
+            // Common metadata
+            author: content?.author ? {
+                login: content.author.login,
+                avatarUrl: content.author.avatarUrl
+            } : undefined,
+            labels: content?.labels?.nodes?.map((label: any) => ({
+                name: label.name,
+                color: label.color
+            })) || [],
+            milestone: content?.milestone ? {
+                title: content.milestone.title,
+                dueOn: content.milestone.dueOn
+            } : undefined,
+            createdAt: content?.createdAt,
+            updatedAt: content?.updatedAt,
+            closedAt: content?.closedAt,
+            commentCount: content?.comments?.totalCount || 0,
+            reactionCount: content?.reactions?.totalCount || 0,
+
+            // Pull Request specific
+            isDraft: content?.isDraft,
+            merged: content?.merged,
+            mergedAt: content?.mergedAt,
+            mergeable: content?.mergeable,
+            reviewDecision: content?.reviewDecision,
+            additions: content?.additions,
+            deletions: content?.deletions,
+            reviewers: content?.reviewRequests?.nodes?.map((rr: any) => ({
+                login: rr.requestedReviewer?.login,
+                avatarUrl: rr.requestedReviewer?.avatarUrl
+            })).filter((r: any) => r.login) || [],
+            ciStatus: content?.commits?.nodes?.[0]?.commit?.statusCheckRollup?.state || null
         };
 
         return item;

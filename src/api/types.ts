@@ -32,11 +32,47 @@ export interface ProjectItem {
     body?: string;
     assignees: Assignee[];
     fieldValues: Map<string, FieldValue>;
+
+    // Common metadata
+    author?: Author;
+    labels?: Label[];
+    milestone?: Milestone;
+    createdAt?: string;
+    updatedAt?: string;
+    closedAt?: string;
+    commentCount?: number;
+    reactionCount?: number;
+
+    // Pull Request specific
+    isDraft?: boolean;
+    merged?: boolean;
+    mergedAt?: string;
+    mergeable?: string;
+    reviewDecision?: 'APPROVED' | 'CHANGES_REQUESTED' | 'REVIEW_REQUIRED' | null;
+    additions?: number;
+    deletions?: number;
+    reviewers?: Assignee[];
+    ciStatus?: 'SUCCESS' | 'PENDING' | 'FAILURE' | 'ERROR' | null;
 }
 
 export interface Assignee {
     login: string;
     avatarUrl: string;
+}
+
+export interface Author {
+    login: string;
+    avatarUrl: string;
+}
+
+export interface Label {
+    name: string;
+    color: string;
+}
+
+export interface Milestone {
+    title: string;
+    dueOn?: string;
 }
 
 export interface FieldValue {
