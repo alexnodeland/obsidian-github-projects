@@ -76,10 +76,10 @@ export class ProjectBoardView extends ItemView {
             return;
         }
 
-        if (!this.plugin.settings.organization || !this.plugin.settings.projectNumber) {
+        if (!this.plugin.settings.owner || !this.plugin.settings.projectNumber) {
             render(
                 <EmptyState
-                    message="Please configure organization and project number in settings"
+                    message="Please configure project owner and number in settings"
                     icon="⚙️"
                     action={{
                         text: 'Open Settings',

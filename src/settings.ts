@@ -2,13 +2,15 @@ import { App, PluginSettingTab, Setting, Notice } from 'obsidian';
 import GitHubProjectsPlugin from './main';
 
 export interface GitHubProjectsSettings {
-    organization: string;
+    ownerType: 'user' | 'organization';
+    owner: string; // username or organization name
     projectNumber: number;
     refreshInterval: number; // seconds, 0 for manual only
 }
 
 export const DEFAULT_SETTINGS: GitHubProjectsSettings = {
-    organization: '',
+    ownerType: 'user',
+    owner: '',
     projectNumber: 1,
     refreshInterval: 300 // 5 minutes
 };
@@ -107,19 +109,40 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
         containerEl.createEl('h3', { text: 'Project Configuration' });
 
         new Setting(containerEl)
-            .setName('Organization')
-            .setDesc('GitHub organization name (e.g., "octo-org")')
+            .setName('Project Owner Type')
+            .setDesc('Is this a personal or organization project?')
+            .addDropdown(dropdown => dropdown
+                .addOption('user', 'Personal Account')
+                .addOption('organization', 'Organization')
+                .setValue(this.plugin.settings.ownerType)
+                .onChange(async (value: 'user' | 'organization') => {
+                    this.plugin.settings.ownerType = value;
+                    await this.plugin.saveSettings();
+                    this.display(); // Refresh to update description
+                }));
+
+        const ownerDesc = this.plugin.settings.ownerType === 'user'
+            ? 'Your GitHub username (e.g., "octocat")'
+            : 'GitHub organization name (e.g., "octo-org")';
+
+        new Setting(containerEl)
+            .setName(this.plugin.settings.ownerType === 'user' ? 'Username' : 'Organization')
+            .setDesc(ownerDesc)
             .addText(text => text
-                .setPlaceholder('octo-org')
-                .setValue(this.plugin.settings.organization)
+                .setPlaceholder(this.plugin.settings.ownerType === 'user' ? 'octocat' : 'octo-org')
+                .setValue(this.plugin.settings.owner)
                 .onChange(async (value) => {
-                    this.plugin.settings.organization = value;
+                    this.plugin.settings.owner = value;
                     await this.plugin.saveSettings();
                 }));
 
+        const projectUrlExample = this.plugin.settings.ownerType === 'user'
+            ? 'github.com/users/octocat/projects/5'
+            : 'github.com/orgs/octo-org/projects/5';
+
         new Setting(containerEl)
             .setName('Project Number')
-            .setDesc('Project number from the URL (e.g., 5 from github.com/orgs/octo-org/projects/5)')
+            .setDesc(`Project number from the URL (e.g., 5 from ${projectUrlExample})`)
             .addText(text => text
                 .setPlaceholder('5')
                 .setValue(String(this.plugin.settings.projectNumber))

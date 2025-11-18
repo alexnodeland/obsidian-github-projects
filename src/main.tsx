@@ -123,15 +123,15 @@ export default class GitHubProjectsPlugin extends Plugin {
             throw new Error('No GitHub client available. Please configure your token.');
         }
 
-        if (!this.settings.organization || !this.settings.projectNumber) {
-            throw new Error('Please configure organization and project number in settings.');
+        if (!this.settings.owner || !this.settings.projectNumber) {
+            throw new Error('Please configure owner and project number in settings.');
         }
 
         try {
             // Fetch project
             const project = await this.cache.fetchWithCache(
-                `project-${this.settings.organization}-${this.settings.projectNumber}`,
-                () => client.fetchProject(this.settings.organization, this.settings.projectNumber)
+                `project-${this.settings.ownerType}-${this.settings.owner}-${this.settings.projectNumber}`,
+                () => client.fetchProject(this.settings.owner, this.settings.projectNumber, this.settings.ownerType)
             );
 
             this.projectState.setProject(project);

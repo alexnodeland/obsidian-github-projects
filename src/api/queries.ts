@@ -51,6 +51,46 @@ export const QUERIES = {
         }
     `,
 
+    GET_USER_PROJECT: `
+        query($user: String!, $number: Int!) {
+            user(login: $user) {
+                projectV2(number: $number) {
+                    id
+                    title
+                    url
+                    number
+                    fields(first: 20) {
+                        nodes {
+                            ... on ProjectV2Field {
+                                id
+                                name
+                            }
+                            ... on ProjectV2SingleSelectField {
+                                id
+                                name
+                                options {
+                                    id
+                                    name
+                                }
+                            }
+                            ... on ProjectV2IterationField {
+                                id
+                                name
+                                configuration {
+                                    iterations {
+                                        id
+                                        startDate
+                                        title
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    `,
+
     GET_PROJECT_ITEMS: `
         query($projectId: ID!, $cursor: String) {
             node(id: $projectId) {

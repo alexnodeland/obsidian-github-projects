@@ -71,11 +71,16 @@ export class GitHubClient {
     }
 
     /**
-     * Fetch a project by organization and number
+     * Fetch a project by owner (user or organization) and number
      */
-    async fetchProject(org: string, number: number): Promise<Project> {
-        const data: any = await this.query(QUERIES.GET_PROJECT, { org, number });
-        return this.transformProject(data.organization.projectV2);
+    async fetchProject(owner: string, number: number, ownerType: 'user' | 'organization' = 'organization'): Promise<Project> {
+        if (ownerType === 'user') {
+            const data: any = await this.query(QUERIES.GET_USER_PROJECT, { user: owner, number });
+            return this.transformProject(data.user.projectV2);
+        } else {
+            const data: any = await this.query(QUERIES.GET_PROJECT, { org: owner, number });
+            return this.transformProject(data.organization.projectV2);
+        }
     }
 
     /**
