@@ -819,9 +819,11 @@
 }
 
 /* Card Detail Modal - Jira-like Two-Column Layout */
+.modal.card-detail-modal,
+.card-detail-modal.modal,
 .card-detail-modal .modal {
-  max-width: 1400px;
-  width: 95vw;
+  max-width: 1400px !important;
+  width: 95vw !important;
 }
 
 .card-detail-container {
