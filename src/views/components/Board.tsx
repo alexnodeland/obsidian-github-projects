@@ -21,9 +21,11 @@ export const Board = ({ state, onCardMove, onCardClick }: BoardProps) => {
         search: '',
         labels: [],
         assignees: [],
+        authors: [],
         repositories: [],
         states: [],
         types: [],
+        milestone: '',
     });
     const [globalSort, setGlobalSort] = useState<SortOption>({
         field: 'updated',

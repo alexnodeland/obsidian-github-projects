@@ -6,9 +6,11 @@ export interface GlobalFilterOptions {
     search: string;
     labels: string[];
     assignees: string[];
+    authors: string[];
     repositories: string[];
     states: string[];
     types: string[];
+    milestone: string;
 }
 
 interface GlobalFiltersProps {
@@ -43,9 +45,11 @@ export const GlobalFilters = ({
             search,
             labels: selectedLabels,
             assignees: selectedAssignees,
+            authors: [],
             repositories: selectedRepositories,
             states: [],
             types: [],
+            milestone: '',
             ...updates,
         });
     };
@@ -92,7 +96,7 @@ export const GlobalFilters = ({
         setSelectedRepositories([]);
         setSelectedLabels([]);
         setSelectedAssignees([]);
-        updateFilters({ search: '', repositories: [], labels: [], assignees: [] });
+        updateFilters({ search: '', repositories: [], labels: [], assignees: [], authors: [], milestone: '' });
     };
 
     const hasActiveFilters = search !== '' || selectedRepositories.length > 0 ||
