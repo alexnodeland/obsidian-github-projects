@@ -7,6 +7,7 @@ import { EmptyState } from './components/EmptyState';
 import { CardDetailModal } from './modals/CardDetailModal';
 import { ProjectItem } from '../api/types';
 import { displayError } from '../utils/error-handling';
+import { ToastContainer, useToasts } from './components/Toast';
 
 export const VIEW_TYPE_PROJECT_BOARD = 'github-project-board';
 
@@ -108,15 +109,22 @@ export class ProjectBoardView extends ItemView {
             // Load project data
             await this.plugin.loadProjectData();
 
-            // Render board
-            render(
-                <Board
-                    state={this.plugin.projectState}
-                    onCardMove={this.handleCardMove.bind(this)}
-                    onCardClick={this.handleCardClick.bind(this)}
-                />,
-                this.containerElement
-            );
+            // Render board with Toast container
+            const BoardWithToasts = () => {
+                const { toasts, close } = useToasts();
+                return (
+                    <div style={{ position: 'relative', height: '100%' }}>
+                        <Board
+                            state={this.plugin.projectState}
+                            onCardMove={this.handleCardMove.bind(this)}
+                            onCardClick={this.handleCardClick.bind(this)}
+                        />
+                        <ToastContainer toasts={toasts} onClose={close} />
+                    </div>
+                );
+            };
+
+            render(<BoardWithToasts />, this.containerElement);
         } catch (error) {
             displayError(error as Error);
             render(
