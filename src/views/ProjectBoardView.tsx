@@ -162,7 +162,21 @@ export class ProjectBoardView extends ItemView {
      * Handle card click to show details
      */
     private handleCardClick(card: ProjectItem) {
-        new CardDetailModal(this.app, card).open();
+        const githubClient = this.plugin.getGitHubClient();
+        if (!githubClient) {
+            console.error('GitHub client not available');
+            return;
+        }
+
+        new CardDetailModal(
+            this.app,
+            card,
+            githubClient,
+            (updatedCard) => {
+                // Refresh the board to show updated card
+                this.refresh();
+            }
+        ).open();
     }
 
     /**

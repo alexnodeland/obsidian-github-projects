@@ -62,3 +62,40 @@ export function getInitials(name: string): string {
     // Multiple words - take first character of first two words
     return (parts[0][0] + parts[1][0]).toUpperCase();
 }
+
+/**
+ * Format relative time (e.g., "2 hours ago", "5 minutes ago")
+ */
+export function formatRelativeTime(date: Date | string | null): string {
+    if (!date) return '';
+
+    const d = typeof date === 'string' ? new Date(date) : date;
+
+    if (isNaN(d.getTime())) return '';
+
+    const now = new Date();
+    const diffMs = now.getTime() - d.getTime();
+    const diffSeconds = Math.floor(diffMs / 1000);
+    const diffMinutes = Math.floor(diffSeconds / 60);
+    const diffHours = Math.floor(diffMinutes / 60);
+    const diffDays = Math.floor(diffHours / 24);
+    const diffWeeks = Math.floor(diffDays / 7);
+    const diffMonths = Math.floor(diffDays / 30);
+    const diffYears = Math.floor(diffDays / 365);
+
+    if (diffSeconds < 60) {
+        return 'just now';
+    } else if (diffMinutes < 60) {
+        return `${diffMinutes}m ago`;
+    } else if (diffHours < 24) {
+        return `${diffHours}h ago`;
+    } else if (diffDays < 7) {
+        return `${diffDays}d ago`;
+    } else if (diffWeeks < 4) {
+        return `${diffWeeks}w ago`;
+    } else if (diffMonths < 12) {
+        return `${diffMonths}mo ago`;
+    } else {
+        return `${diffYears}y ago`;
+    }
+}

@@ -24,6 +24,7 @@ export interface FieldOption {
 
 export interface ProjectItem {
     id: string;
+    contentId?: string; // The actual Issue/PR node ID (for mutations)
     type: 'Issue' | 'PullRequest' | 'DraftIssue';
     title: string;
     url?: string;
@@ -32,11 +33,68 @@ export interface ProjectItem {
     body?: string;
     assignees: Assignee[];
     fieldValues: Map<string, FieldValue>;
+
+    // Repository information
+    repository?: Repository;
+
+    // Common metadata
+    author?: Author;
+    labels?: Label[];
+    milestone?: Milestone;
+    createdAt?: string;
+    updatedAt?: string;
+    closedAt?: string;
+    commentCount?: number;
+    reactionCount?: number;
+    comments?: Comment[];
+
+    // Pull Request specific
+    isDraft?: boolean;
+    merged?: boolean;
+    mergedAt?: string;
+    mergeable?: string;
+    reviewDecision?: 'APPROVED' | 'CHANGES_REQUESTED' | 'REVIEW_REQUIRED' | null;
+    additions?: number;
+    deletions?: number;
+    reviewers?: Assignee[];
+    ciStatus?: 'SUCCESS' | 'PENDING' | 'FAILURE' | 'ERROR' | null;
 }
 
 export interface Assignee {
+    id: string;
     login: string;
     avatarUrl: string;
+}
+
+export interface Author {
+    login: string;
+    avatarUrl: string;
+}
+
+export interface Label {
+    id: string;
+    name: string;
+    color: string;
+}
+
+export interface Milestone {
+    title: string;
+    dueOn?: string;
+}
+
+export interface Repository {
+    id: string;
+    owner: string;
+    name: string;
+    nameWithOwner: string;
+}
+
+export interface Comment {
+    id: string;
+    body: string;
+    author: Author;
+    createdAt: string;
+    updatedAt?: string;
 }
 
 export interface FieldValue {

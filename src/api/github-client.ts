@@ -186,11 +186,183 @@ export class GitHubClient {
     }
 
     /**
+     * Update an issue's title and/or body
+     */
+    async updateIssue(issueId: string, title?: string, body?: string): Promise<void> {
+        const input = {
+            id: issueId,
+            ...(title !== undefined && { title }),
+            ...(body !== undefined && { body })
+        };
+        console.log('[GitHubClient] updateIssue called with:', input);
+
+        const result = await this.query(MUTATIONS.UPDATE_ISSUE, { input });
+        console.log('[GitHubClient] updateIssue response:', result);
+    }
+
+    /**
+     * Update a pull request's title and/or body
+     */
+    async updatePullRequest(prId: string, title?: string, body?: string): Promise<void> {
+        const input = {
+            pullRequestId: prId,  // GitHub API expects 'pullRequestId' not 'id'
+            ...(title !== undefined && { title }),
+            ...(body !== undefined && { body })
+        };
+        console.log('[GitHubClient] updatePullRequest called with:', input);
+
+        const result = await this.query(MUTATIONS.UPDATE_PULL_REQUEST, { input });
+        console.log('[GitHubClient] updatePullRequest response:', result);
+    }
+
+    /**
+     * Add labels to an issue or PR
+     */
+    async addLabels(issueOrPrId: string, labelIds: string[]): Promise<void> {
+        await this.query(MUTATIONS.ADD_LABELS, {
+            input: {
+                labelableId: issueOrPrId,
+                labelIds
+            }
+        });
+    }
+
+    /**
+     * Remove labels from an issue or PR
+     */
+    async removeLabels(issueOrPrId: string, labelIds: string[]): Promise<void> {
+        await this.query(MUTATIONS.REMOVE_LABELS, {
+            input: {
+                labelableId: issueOrPrId,
+                labelIds
+            }
+        });
+    }
+
+    /**
+     * Add assignees to an issue or PR
+     */
+    async addAssignees(issueOrPrId: string, assigneeIds: string[]): Promise<void> {
+        await this.query(MUTATIONS.ADD_ASSIGNEES, {
+            input: {
+                assignableId: issueOrPrId,
+                assigneeIds
+            }
+        });
+    }
+
+    /**
+     * Remove assignees from an issue or PR
+     */
+    async removeAssignees(issueOrPrId: string, assigneeIds: string[]): Promise<void> {
+        await this.query(MUTATIONS.REMOVE_ASSIGNEES, {
+            input: {
+                assignableId: issueOrPrId,
+                assigneeIds
+            }
+        });
+    }
+
+    /**
+     * Close an issue
+     */
+    async closeIssue(issueId: string): Promise<void> {
+        await this.query(MUTATIONS.CLOSE_ISSUE, {
+            input: { issueId }
+        });
+    }
+
+    /**
+     * Reopen an issue
+     */
+    async reopenIssue(issueId: string): Promise<void> {
+        await this.query(MUTATIONS.REOPEN_ISSUE, {
+            input: { issueId }
+        });
+    }
+
+    /**
+     * Close a pull request
+     */
+    async closePullRequest(prId: string): Promise<void> {
+        await this.query(MUTATIONS.CLOSE_PULL_REQUEST, {
+            input: { pullRequestId: prId }
+        });
+    }
+
+    /**
+     * Reopen a pull request
+     */
+    async reopenPullRequest(prId: string): Promise<void> {
+        await this.query(MUTATIONS.REOPEN_PULL_REQUEST, {
+            input: { pullRequestId: prId }
+        });
+    }
+
+    /**
+     * Get repository labels (for autocomplete/selection)
+     */
+    async getRepositoryLabels(owner: string, repo: string): Promise<any[]> {
+        const data: any = await this.query(MUTATIONS.GET_REPOSITORY_LABELS, {
+            owner,
+            repo
+        });
+        return data.repository.labels.nodes;
+    }
+
+    /**
+     * Create a new label in a repository
+     */
+    async createLabel(repositoryId: string, name: string, color: string): Promise<any> {
+        const data: any = await this.query(MUTATIONS.CREATE_LABEL, {
+            input: {
+                repositoryId,
+                name,
+                color
+            }
+        });
+        return data.createLabel.label;
+    }
+
+    /**
+     * Search for users (for assignee/reviewer autocomplete)
+     */
+    async searchUsers(query: string): Promise<any[]> {
+        const data: any = await this.query(MUTATIONS.SEARCH_USERS, {
+            query
+        });
+        return data.search.nodes;
+    }
+
+    /**
      * Get rate limit status
      */
     async getRateLimit(): Promise<RateLimit> {
         const data: any = await this.query(QUERIES.GET_RATE_LIMIT);
         return data.rateLimit;
+    }
+
+    /**
+     * Get comments for an issue or pull request
+     */
+    async getComments(owner: string, repo: string, number: number, type: 'Issue' | 'PullRequest'): Promise<any[]> {
+        const query = type === 'Issue' ? MUTATIONS.GET_ISSUE_COMMENTS : MUTATIONS.GET_PR_COMMENTS;
+        const data: any = await this.query(query, { owner, repo, number });
+        const itemType = type === 'Issue' ? 'issue' : 'pullRequest';
+        return data.repository[itemType].comments.nodes;
+    }
+
+    /**
+     * Add a comment to an issue or pull request
+     */
+    async addComment(subjectId: string, body: string): Promise<any> {
+        const data: any = await this.query(MUTATIONS.ADD_COMMENT, {
+            input: {
+                subjectId,
+                body
+            }
+        });
+        return data.addComment.commentEdge.node;
     }
 
     /**
@@ -235,16 +407,84 @@ export class GitHubClient {
      */
     private transformItem(raw: any): ProjectItem {
         const content = raw.content;
+
+        // Handle issues/PRs with null content
+        // For items with no content, try to get title from fieldValues (common in Projects V2)
+        if (!content) {
+            const fieldValues = this.transformFieldValues(raw.fieldValues?.nodes || []);
+            const titleField = fieldValues.get('Title');
+            const title = titleField?.value ? String(titleField.value) : '[Unavailable]';
+
+            return {
+                id: raw.id,
+                type: raw.type === 'PULL_REQUEST' ? 'PullRequest' : (raw.type === 'ISSUE' ? 'Issue' : 'DraftIssue'),
+                title: title,
+                body: title === '[Unavailable]'
+                    ? 'Unable to load details. This may be due to insufficient token permissions (needs "repo" scope) or the item was deleted.'
+                    : '',
+                assignees: [],
+                fieldValues: fieldValues,
+                labels: [],
+                commentCount: 0,
+                reactionCount: 0,
+                reviewers: [],
+                ciStatus: null
+            };
+        }
+
         const item: ProjectItem = {
             id: raw.id,
-            type: raw.type || 'DraftIssue',
-            title: content?.title || 'Untitled',
-            url: content?.url,
-            number: content?.number,
-            state: content?.state,
-            body: content?.body || '',
-            assignees: this.transformAssignees(content?.assignees?.nodes || []),
-            fieldValues: this.transformFieldValues(raw.fieldValues?.nodes || [])
+            contentId: content.id, // Store the actual Issue/PR ID for mutations
+            type: raw.type === 'PULL_REQUEST' ? 'PullRequest' : (raw.type === 'ISSUE' ? 'Issue' : 'DraftIssue'),
+            title: content.title || 'Untitled',
+            url: content.url,
+            number: content.number,
+            state: content.state,
+            body: content.body || '',
+            assignees: this.transformAssignees(content.assignees?.nodes || []),
+            fieldValues: this.transformFieldValues(raw.fieldValues?.nodes || []),
+
+            // Repository information
+            repository: content.repository ? {
+                id: content.repository.id,
+                owner: content.repository.owner?.login || '',
+                name: content.repository.name || '',
+                nameWithOwner: content.repository.nameWithOwner || ''
+            } : undefined,
+
+            // Common metadata
+            author: content.author ? {
+                login: content.author.login,
+                avatarUrl: content.author.avatarUrl
+            } : undefined,
+            labels: content.labels?.nodes?.map((label: any) => ({
+                id: label.id,
+                name: label.name,
+                color: label.color
+            })) || [],
+            milestone: content.milestone ? {
+                title: content.milestone.title,
+                dueOn: content.milestone.dueOn
+            } : undefined,
+            createdAt: content.createdAt,
+            updatedAt: content.updatedAt,
+            closedAt: content.closedAt,
+            commentCount: content.comments?.totalCount || 0,
+            reactionCount: content.reactions?.totalCount || 0,
+
+            // Pull Request specific
+            isDraft: content.isDraft,
+            merged: content.merged,
+            mergedAt: content.mergedAt,
+            mergeable: content.mergeable,
+            reviewDecision: content.reviewDecision,
+            additions: content.additions,
+            deletions: content.deletions,
+            reviewers: content.reviewRequests?.nodes?.map((rr: any) => ({
+                login: rr.requestedReviewer?.login,
+                avatarUrl: rr.requestedReviewer?.avatarUrl
+            })).filter((r: any) => r.login) || [],
+            ciStatus: content.commits?.nodes?.[0]?.commit?.statusCheckRollup?.state || null
         };
 
         return item;
@@ -255,6 +495,7 @@ export class GitHubClient {
      */
     private transformAssignees(raw: any[]): Assignee[] {
         return raw.map(assignee => ({
+            id: assignee.id,
             login: assignee.login,
             avatarUrl: assignee.avatarUrl
         }));

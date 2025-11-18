@@ -138,28 +138,122 @@ export const QUERIES = {
                             }
                             content {
                                 ... on Issue {
+                                    id
                                     title
                                     number
                                     url
                                     state
                                     body
+                                    createdAt
+                                    updatedAt
+                                    closedAt
+                                    repository {
+                                        id
+                                        owner {
+                                            login
+                                        }
+                                        name
+                                        nameWithOwner
+                                    }
+                                    author {
+                                        login
+                                        avatarUrl
+                                    }
                                     assignees(first: 5) {
                                         nodes {
+                                            id
                                             login
                                             avatarUrl
                                         }
                                     }
+                                    labels(first: 10) {
+                                        nodes {
+                                            id
+                                            name
+                                            color
+                                        }
+                                    }
+                                    milestone {
+                                        title
+                                        dueOn
+                                    }
+                                    comments {
+                                        totalCount
+                                    }
+                                    reactions {
+                                        totalCount
+                                    }
                                 }
                                 ... on PullRequest {
+                                    id
                                     title
                                     number
                                     url
                                     state
                                     body
+                                    createdAt
+                                    updatedAt
+                                    closedAt
+                                    mergedAt
+                                    isDraft
+                                    merged
+                                    mergeable
+                                    reviewDecision
+                                    additions
+                                    deletions
+                                    repository {
+                                        id
+                                        owner {
+                                            login
+                                        }
+                                        name
+                                        nameWithOwner
+                                    }
+                                    author {
+                                        login
+                                        avatarUrl
+                                    }
                                     assignees(first: 5) {
                                         nodes {
+                                            id
                                             login
                                             avatarUrl
+                                        }
+                                    }
+                                    labels(first: 10) {
+                                        nodes {
+                                            id
+                                            name
+                                            color
+                                        }
+                                    }
+                                    milestone {
+                                        title
+                                        dueOn
+                                    }
+                                    comments {
+                                        totalCount
+                                    }
+                                    reactions {
+                                        totalCount
+                                    }
+                                    reviewRequests(first: 5) {
+                                        nodes {
+                                            requestedReviewer {
+                                                ... on User {
+                                                    login
+                                                    avatarUrl
+                                                }
+                                            }
+                                        }
+                                    }
+                                    commits(last: 1) {
+                                        nodes {
+                                            commit {
+                                                statusCheckRollup {
+                                                    state
+                                                }
+                                            }
                                         }
                                     }
                                 }
