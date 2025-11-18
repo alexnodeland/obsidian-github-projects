@@ -8,7 +8,8 @@
     "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
     "test": "jest",
     "test:watch": "jest --watch",
-    "lint": "eslint src --ext .ts,.tsx"
+    "lint": "eslint src --ext .ts,.tsx",
+    "version": "npm run build"
   },
   "keywords": [
     "obsidian",
