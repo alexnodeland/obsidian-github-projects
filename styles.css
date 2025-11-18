@@ -818,6 +818,266 @@
   font-weight: 600;
 }
 
+/* Card Detail Modal - Jira-like Two-Column Layout */
+.card-detail-modal .modal {
+  max-width: 1200px;
+  width: 90vw;
+}
+
+.card-detail-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.card-detail-main {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 30px;
+  min-height: 400px;
+}
+
+.card-detail-left {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.card-detail-right {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-left: 1px solid var(--background-modifier-border);
+  padding-left: 24px;
+}
+
+.card-detail-header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.card-detail-number {
+  color: var(--text-faint);
+}
+
+.card-detail-type {
+  padding: 3px 8px;
+  border-radius: 4px;
+  background-color: var(--background-modifier-border);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.card-detail-title-section {
+  margin-bottom: 8px;
+}
+
+.card-detail-title {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--text-normal);
+  margin: 0;
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.card-detail-title:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+.card-detail-title-input {
+  width: 100%;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.3;
+  padding: 8px;
+  border: 2px solid var(--interactive-accent);
+  border-radius: 4px;
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+  font-family: inherit;
+}
+
+.card-detail-title-input:focus {
+  outline: none;
+}
+
+.card-detail-body-section h3 {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--text-normal);
+}
+
+.card-detail-body {
+  min-height: 100px;
+  padding: 12px;
+  border-radius: 4px;
+  background-color: var(--background-secondary);
+  color: var(--text-normal);
+  line-height: 1.6;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  white-space: pre-wrap;
+}
+
+.card-detail-body:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+.card-detail-body-input {
+  width: 100%;
+  min-height: 200px;
+  padding: 12px;
+  border: 2px solid var(--interactive-accent);
+  border-radius: 4px;
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.card-detail-body-input:focus {
+  outline: none;
+}
+
+.editable-field-hint {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 6px;
+  font-style: italic;
+}
+
+.empty-field {
+  color: var(--text-faint);
+  font-style: italic;
+}
+
+.empty-field-small {
+  color: var(--text-faint);
+  font-size: 12px;
+  font-style: italic;
+}
+
+.card-detail-section {
+  margin-bottom: 4px;
+}
+
+.card-detail-section h3 {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.card-detail-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.milestone-info {
+  font-size: 13px;
+  color: var(--text-normal);
+}
+
+.milestone-due {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.pr-changes-text {
+  font-family: var(--font-monospace);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.pr-additions {
+  color: rgb(34, 197, 94);
+}
+
+.pr-deletions {
+  color: rgb(239, 68, 68);
+}
+
+.engagement-info {
+  font-size: 12px;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.timestamps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.timestamp-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  gap: 12px;
+}
+
+.timestamp-label {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.timestamp-value {
+  color: var(--text-normal);
+}
+
+.github-link-button {
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 13px;
+  text-align: center;
+  transition: all 0.15s ease;
+}
+
+.github-link-button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  text-decoration: none;
+}
+
+/* Responsive - Stack columns on smaller screens */
+@media (max-width: 900px) {
+  .card-detail-main {
+    grid-template-columns: 1fr;
+  }
+
+  .card-detail-right {
+    border-left: none;
+    border-top: 1px solid var(--background-modifier-border);
+    padding-left: 0;
+    padding-top: 24px;
+  }
+}
+
 /* Dark theme adjustments */
 .theme-dark .kanban-card {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
