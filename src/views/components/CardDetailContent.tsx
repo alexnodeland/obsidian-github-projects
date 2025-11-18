@@ -41,6 +41,9 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
             setIsEditingTitle(false);
         } catch (error) {
             console.error('Failed to update title:', error);
+            // Show error to user
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            alert(`Failed to update title: ${errorMessage}\n\nThis may be due to insufficient token permissions. Ensure your GitHub token has the 'repo' scope.`);
             setEditedTitle(card.title);
         } finally {
             setIsSaving(false);
@@ -70,6 +73,9 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
             setIsEditingBody(false);
         } catch (error) {
             console.error('Failed to update description:', error);
+            // Show error to user
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            alert(`Failed to update description: ${errorMessage}\n\nThis may be due to insufficient token permissions. Ensure your GitHub token has the 'repo' scope.`);
             setEditedBody(card.body || '');
         } finally {
             setIsSaving(false);
