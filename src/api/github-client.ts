@@ -398,7 +398,7 @@ export class GitHubClient {
         const item: ProjectItem = {
             id: raw.id,
             contentId: content.id, // Store the actual Issue/PR ID for mutations
-            type: raw.type || 'DraftIssue',
+            type: raw.type === 'PULL_REQUEST' ? 'PullRequest' : (raw.type === 'ISSUE' ? 'Issue' : 'DraftIssue'),
             title: content.title || 'Untitled',
             url: content.url,
             number: content.number,
