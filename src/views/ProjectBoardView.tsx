@@ -1,0 +1,166 @@
+import { ItemView, WorkspaceLeaf } from 'obsidian';
+import { render } from 'preact';
+import { h } from 'preact';
+import GitHubProjectsPlugin from '../main';
+import { Board } from './components/Board';
+import { EmptyState } from './components/EmptyState';
+import { CardDetailModal } from './modals/CardDetailModal';
+import { ProjectItem } from '../api/types';
+import { displayError } from '../utils/error-handling';
+
+export const VIEW_TYPE_PROJECT_BOARD = 'github-project-board';
+
+export class ProjectBoardView extends ItemView {
+    plugin: GitHubProjectsPlugin;
+    private containerElement: HTMLElement | null = null;
+
+    constructor(leaf: WorkspaceLeaf, plugin: GitHubProjectsPlugin) {
+        super(leaf);
+        this.plugin = plugin;
+    }
+
+    getViewType(): string {
+        return VIEW_TYPE_PROJECT_BOARD;
+    }
+
+    getDisplayText(): string {
+        return 'GitHub Project Board';
+    }
+
+    getIcon(): string {
+        return 'layout-dashboard';
+    }
+
+    async onOpen() {
+        const container = this.containerEl.children[1];
+        container.empty();
+        container.addClass('github-project-container');
+
+        this.containerElement = container as HTMLElement;
+
+        await this.renderBoard();
+    }
+
+    async onClose() {
+        // Cleanup
+        if (this.containerElement) {
+            this.containerElement.empty();
+        }
+    }
+
+    /**
+     * Render the project board
+     */
+    async renderBoard() {
+        if (!this.containerElement) return;
+
+        const token = this.plugin.tokenManager.getToken();
+
+        if (!token) {
+            render(
+                <EmptyState
+                    message="Please configure your GitHub token in settings"
+                    icon="🔐"
+                    action={{
+                        text: 'Open Settings',
+                        onClick: () => {
+                            // @ts-ignore
+                            this.app.setting.open();
+                            // @ts-ignore
+                            this.app.setting.openTabById('github-projects');
+                        }
+                    }}
+                />,
+                this.containerElement
+            );
+            return;
+        }
+
+        if (!this.plugin.settings.organization || !this.plugin.settings.projectNumber) {
+            render(
+                <EmptyState
+                    message="Please configure organization and project number in settings"
+                    icon="⚙️"
+                    action={{
+                        text: 'Open Settings',
+                        onClick: () => {
+                            // @ts-ignore
+                            this.app.setting.open();
+                            // @ts-ignore
+                            this.app.setting.openTabById('github-projects');
+                        }
+                    }}
+                />,
+                this.containerElement
+            );
+            return;
+        }
+
+        try {
+            // Load project data
+            await this.plugin.loadProjectData();
+
+            // Render board
+            render(
+                <Board
+                    state={this.plugin.projectState}
+                    onCardMove={this.handleCardMove.bind(this)}
+                    onCardClick={this.handleCardClick.bind(this)}
+                />,
+                this.containerElement
+            );
+        } catch (error) {
+            displayError(error as Error);
+            render(
+                <EmptyState
+                    message="Failed to load project. Check console for details."
+                    icon="❌"
+                    action={{
+                        text: 'Retry',
+                        onClick: () => this.renderBoard()
+                    }}
+                />,
+                this.containerElement
+            );
+        }
+    }
+
+    /**
+     * Handle card movement between columns
+     */
+    private handleCardMove(cardId: string, toColumnId: string) {
+        try {
+            // Update local state optimistically
+            this.plugin.projectState.moveCard(cardId, toColumnId);
+
+            // Queue update to GitHub
+            const statusField = this.plugin.projectState.getStatusField();
+            const project = this.plugin.projectState.getProject();
+
+            if (statusField && project) {
+                this.plugin.syncManager?.queueUpdate(cardId, {
+                    projectId: project.id,
+                    itemId: cardId,
+                    fieldId: statusField.id,
+                    optionId: toColumnId
+                });
+            }
+        } catch (error) {
+            displayError(error as Error);
+        }
+    }
+
+    /**
+     * Handle card click to show details
+     */
+    private handleCardClick(card: ProjectItem) {
+        new CardDetailModal(this.app, card).open();
+    }
+
+    /**
+     * Refresh the view
+     */
+    async refresh() {
+        await this.renderBoard();
+    }
+}

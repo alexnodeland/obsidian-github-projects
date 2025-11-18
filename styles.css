@@ -1,0 +1,375 @@
+/* GitHub Projects Plugin Styles */
+
+/* Container */
+.github-project-container {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--background-secondary);
+}
+
+/* Board Layout */
+.project-board {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* Column Styling */
+.kanban-column {
+  flex: 0 0 300px;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  padding: 12px;
+  max-height: 100%;
+}
+
+.column-header {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-normal);
+  padding: 8px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid var(--interactive-accent);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.column-name {
+  flex: 1;
+}
+
+.column-count {
+  font-size: 12px;
+  color: var(--text-muted);
+  background-color: var(--background-modifier-border);
+  padding: 2px 8px;
+  border-radius: 12px;
+  min-width: 24px;
+  text-align: center;
+}
+
+/* Card List */
+.column-cards {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 50px;
+  padding: 4px;
+}
+
+/* Card Styling */
+.kanban-card {
+  background-color: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.kanban-card:hover {
+  border-color: var(--interactive-accent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.card-drag-handle {
+  cursor: grab;
+  padding: 4px;
+  margin: -8px -8px 4px -8px;
+  color: var(--text-faint);
+  text-align: center;
+  font-size: 12px;
+  user-select: none;
+}
+
+.card-drag-handle:active {
+  cursor: grabbing;
+}
+
+.card-title {
+  font-weight: 500;
+  color: var(--text-normal);
+  margin-bottom: 4px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.card-description {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card-metadata {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 11px;
+  color: var(--text-faint);
+  flex-wrap: wrap;
+}
+
+.card-assignees {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.card-assignee img {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid var(--background-modifier-border);
+}
+
+.assignee-initials {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.assignee-more {
+  font-size: 10px;
+  color: var(--text-muted);
+  padding: 2px 6px;
+  background-color: var(--background-modifier-border);
+  border-radius: 10px;
+}
+
+.card-state {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.card-state-open {
+  background-color: rgba(34, 197, 94, 0.2);
+  color: rgb(34, 197, 94);
+}
+
+.card-state-closed {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: rgb(239, 68, 68);
+}
+
+.card-state-merged {
+  background-color: rgba(147, 51, 234, 0.2);
+  color: rgb(147, 51, 234);
+}
+
+.card-type {
+  font-size: 14px;
+}
+
+/* Drag States */
+.card-ghost {
+  opacity: 0.4;
+  background-color: var(--background-secondary);
+}
+
+.card-dragging {
+  opacity: 0.8;
+  transform: rotate(2deg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 40px;
+  text-align: center;
+}
+
+.empty-state-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.empty-state-message {
+  font-size: 16px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.empty-state-action {
+  margin-top: 8px;
+}
+
+/* Card Detail Modal */
+.card-detail-header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.card-detail-number {
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.card-detail-type {
+  font-size: 12px;
+  padding: 4px 8px;
+  background-color: var(--background-modifier-border);
+  border-radius: 4px;
+  color: var(--text-muted);
+}
+
+.card-detail-state {
+  margin-bottom: 16px;
+}
+
+.state-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.state-open {
+  background-color: rgba(34, 197, 94, 0.2);
+  color: rgb(34, 197, 94);
+}
+
+.state-closed {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: rgb(239, 68, 68);
+}
+
+.state-merged {
+  background-color: rgba(147, 51, 234, 0.2);
+  color: rgb(147, 51, 234);
+}
+
+.card-detail-section {
+  margin-bottom: 20px;
+}
+
+.card-detail-section h3 {
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.card-detail-body {
+  color: var(--text-normal);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.assignee-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.assignee-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px;
+}
+
+.assignee-item img {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+}
+
+.fields-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.field-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.field-name {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.field-value {
+  font-size: 13px;
+  color: var(--text-normal);
+}
+
+.external-link {
+  color: var(--interactive-accent);
+  text-decoration: none;
+}
+
+.external-link:hover {
+  text-decoration: underline;
+}
+
+/* Dark theme adjustments */
+.theme-dark .kanban-card:hover {
+  box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .project-board {
+    flex-direction: column;
+  }
+
+  .kanban-column {
+    flex: 1 1 auto;
+    max-height: none;
+  }
+
+  .fields-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Settings */
+.setting-item-description a {
+  color: var(--interactive-accent);
+}
+
+/* Modal buttons */
+.modal-button-group {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
