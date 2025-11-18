@@ -820,8 +820,8 @@
 
 /* Card Detail Modal - Jira-like Two-Column Layout */
 .card-detail-modal .modal {
-  max-width: 1200px;
-  width: 90vw;
+  max-width: 1400px;
+  width: 95vw;
 }
 
 .card-detail-container {

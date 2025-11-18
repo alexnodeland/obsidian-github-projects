@@ -200,15 +200,6 @@ export const Card = ({ card, onClick }: CardProps) => {
                         {card.state}
                     </div>
                 )}
-
-                {/* Type indicator */}
-                {card.type && (
-                    <div className="card-type">
-                        {card.type === 'Issue' && '📝'}
-                        {card.type === 'PullRequest' && '🔀'}
-                        {card.type === 'DraftIssue' && '✏️'}
-                    </div>
-                )}
             </div>
         </div>
     );
