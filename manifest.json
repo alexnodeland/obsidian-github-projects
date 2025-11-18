@@ -1,7 +1,7 @@
 {
   "id": "github-projects",
   "name": "GitHub Projects",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "minAppVersion": "0.15.0",
   "description": "Manage GitHub Projects V2 with Kanban boards in Obsidian",
   "author": "Your Name",
