@@ -24,6 +24,7 @@ export interface FieldOption {
 
 export interface ProjectItem {
     id: string;
+    contentId?: string; // The actual Issue/PR node ID (for mutations)
     type: 'Issue' | 'PullRequest' | 'DraftIssue';
     title: string;
     url?: string;

@@ -24,12 +24,18 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
             return;
         }
 
+        if (!card.contentId) {
+            console.error('No content ID available for this card');
+            setIsEditingTitle(false);
+            return;
+        }
+
         setIsSaving(true);
         try {
             if (card.type === 'Issue') {
-                await githubClient.updateIssue(card.id, editedTitle, undefined);
+                await githubClient.updateIssue(card.contentId, editedTitle, undefined);
             } else if (card.type === 'PullRequest') {
-                await githubClient.updatePullRequest(card.id, editedTitle, undefined);
+                await githubClient.updatePullRequest(card.contentId, editedTitle, undefined);
             }
             onUpdate({ title: editedTitle });
             setIsEditingTitle(false);
@@ -47,12 +53,18 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
             return;
         }
 
+        if (!card.contentId) {
+            console.error('No content ID available for this card');
+            setIsEditingBody(false);
+            return;
+        }
+
         setIsSaving(true);
         try {
             if (card.type === 'Issue') {
-                await githubClient.updateIssue(card.id, undefined, editedBody);
+                await githubClient.updateIssue(card.contentId, undefined, editedBody);
             } else if (card.type === 'PullRequest') {
-                await githubClient.updatePullRequest(card.id, undefined, editedBody);
+                await githubClient.updatePullRequest(card.contentId, undefined, editedBody);
             }
             onUpdate({ body: editedBody });
             setIsEditingBody(false);

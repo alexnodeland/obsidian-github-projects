@@ -138,6 +138,7 @@ export const QUERIES = {
                             }
                             content {
                                 ... on Issue {
+                                    id
                                     title
                                     number
                                     url
@@ -181,6 +182,7 @@ export const QUERIES = {
                                     }
                                 }
                                 ... on PullRequest {
+                                    id
                                     title
                                     number
                                     url
