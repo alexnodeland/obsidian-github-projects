@@ -1,4 +1,4 @@
-import { h } from 'preact';
+import { h, Fragment } from 'preact';
 import { useState, useEffect, useRef } from 'preact/hooks';
 import { ProjectItem, Label, Assignee, Comment } from '../../api/types';
 import { GitHubClient } from '../../api/github-client';
@@ -533,32 +533,35 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
                     <div className="card-detail-comments-section">
                         <h3>Comments ({comments.length})</h3>
 
-                        {isLoadingComments ? (
-                            <div className="comments-loading">Loading comments...</div>
-                        ) : comments.length > 0 ? (
-                            <div className="comments-list">
-                                {comments.map(comment => (
-                                    <div key={comment.id} className="comment-item">
-                                        <div className="comment-header">
-                                            {comment.author?.avatarUrl && (
-                                                <img src={comment.author.avatarUrl} alt={comment.author.login} className="comment-avatar" />
-                                            )}
-                                            <div className="comment-meta">
-                                                <span className="comment-author">{comment.author?.login || 'Unknown'}</span>
-                                                <span className="comment-date">
-                                                    {new Date(comment.createdAt).toLocaleString()}
-                                                </span>
+                        {/* Scrollable comments list */}
+                        <div className="comments-list">
+                            {isLoadingComments ? (
+                                <div className="comments-loading">Loading comments...</div>
+                            ) : comments.length > 0 ? (
+                                <Fragment>
+                                    {comments.map(comment => (
+                                        <div key={comment.id} className="comment-item">
+                                            <div className="comment-header">
+                                                {comment.author?.avatarUrl && (
+                                                    <img src={comment.author.avatarUrl} alt={comment.author.login} className="comment-avatar" />
+                                                )}
+                                                <div className="comment-meta">
+                                                    <span className="comment-author">{comment.author?.login || 'Unknown'}</span>
+                                                    <span className="comment-date">
+                                                        {new Date(comment.createdAt).toLocaleString()}
+                                                    </span>
+                                                </div>
                                             </div>
+                                            <div className="comment-body">{comment.body}</div>
                                         </div>
-                                        <div className="comment-body">{comment.body}</div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="empty-field-small">No comments yet</div>
-                        )}
+                                    ))}
+                                </Fragment>
+                            ) : (
+                                <div className="empty-field-small">No comments yet</div>
+                            )}
+                        </div>
 
-                        {/* Add Comment Form */}
+                        {/* Fixed Add Comment Form at bottom */}
                         <div className="add-comment-form">
                             <textarea
                                 className="comment-input"
@@ -573,7 +576,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
                                 onClick={handleAddComment}
                                 disabled={isAddingComment || !newComment.trim()}
                             >
-                                {isAddingComment ? 'Adding...' : 'Add Comment'}
+                                {isAddingComment ? <LoadingSpinner size="small" /> : 'Add Comment'}
                             </button>
                         </div>
                     </div>

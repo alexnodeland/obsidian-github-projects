@@ -1970,19 +1970,59 @@
 .card-detail-left {
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
+  overflow: hidden; /* No scroll on the container itself */
+  height: 100%;
 }
 
 .card-detail-body-section {
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
+  overflow: hidden; /* No scroll on description section */
+  min-height: 0; /* Allow flex shrinking */
+}
+
+.card-detail-body-section h3,
+.card-detail-title-section {
+  flex-shrink: 0; /* Keep headers fixed */
+}
+
+.card-detail-body,
+.card-detail-body-input {
+  overflow-y: auto; /* Scroll only within the description content if needed */
+  flex: 1;
+  min-height: 0;
 }
 
 .card-detail-comments-section {
   flex: 1;
-  overflow-y: auto;
-  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Container doesn't scroll */
+  min-height: 0;
+}
+
+.card-detail-comments-section h3 {
+  flex-shrink: 0; /* Keep header fixed */
+}
+
+.comments-list {
+  overflow-y: auto; /* Only the comments list scrolls */
+  flex: 1;
+  min-height: 0;
+  padding: 4px 0;
+}
+
+.comments-list .comments-loading,
+.comments-list .empty-field-small {
+  padding: 20px;
+  text-align: center;
+}
+
+.add-comment-form {
+  flex-shrink: 0; /* Keep comment input fixed at bottom */
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--background-modifier-border);
 }
 
 /* Global Filters */
