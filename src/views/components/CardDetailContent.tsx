@@ -193,7 +193,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
 
             // Sync to GitHub
             try {
-                await githubClient.removeLabels(card.contentId, [(label as any).id || label.name]);
+                await githubClient.removeLabels(card.contentId, [label.id]);
                 onUpdate({ labels: newLabels });
             } catch (error) {
                 console.error('Failed to remove label:', error);
@@ -208,7 +208,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
 
             // Sync to GitHub
             try {
-                await githubClient.addLabels(card.contentId, [(label as any).id || label.name]);
+                await githubClient.addLabels(card.contentId, [label.id]);
                 onUpdate({ labels: newLabels });
             } catch (error) {
                 console.error('Failed to add label:', error);
@@ -230,14 +230,25 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
 
         setIsCreatingLabel(true);
         try {
-            // Create label with random color
+            // Generate random color
             const randomColor = Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
-            const newLabel: Label = { name: newLabelName.trim(), color: randomColor };
 
-            // Add to card
-            await githubClient.addLabels(card.contentId, [newLabelName.trim()]);
+            // First create the label in the repository
+            const createdLabel = await githubClient.createLabel(
+                card.repository.id,
+                newLabelName.trim(),
+                randomColor
+            );
 
-            // Update local state
+            // Then add the label to the issue/PR
+            await githubClient.addLabels(card.contentId, [createdLabel.id]);
+
+            // Update local state with the created label
+            const newLabel: Label = {
+                id: createdLabel.id,
+                name: createdLabel.name,
+                color: createdLabel.color
+            };
             const newLabels = [...editedLabels, newLabel];
             setEditedLabels(newLabels);
             onUpdate({ labels: newLabels });
@@ -306,7 +317,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
             }
         } else {
             // Add assignee locally
-            const newAssignee: Assignee = { login: user.login, avatarUrl: user.avatarUrl };
+            const newAssignee: Assignee = { id: user.id, login: user.login, avatarUrl: user.avatarUrl };
             const newAssignees = [...editedAssignees, newAssignee];
             setEditedAssignees(newAssignees);
 

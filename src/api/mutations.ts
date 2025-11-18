@@ -324,6 +324,18 @@ export const MUTATIONS = {
         }
     `,
 
+    CREATE_LABEL: `
+        mutation CreateLabel($input: CreateLabelInput!) {
+            createLabel(input: $input) {
+                label {
+                    id
+                    name
+                    color
+                }
+            }
+        }
+    `,
+
     SEARCH_USERS: `
         query SearchUsers($query: String!) {
             search(query: $query, type: USER, first: 10) {

@@ -148,6 +148,7 @@ export const QUERIES = {
                                     updatedAt
                                     closedAt
                                     repository {
+                                        id
                                         owner {
                                             login
                                         }
@@ -160,12 +161,14 @@ export const QUERIES = {
                                     }
                                     assignees(first: 5) {
                                         nodes {
+                                            id
                                             login
                                             avatarUrl
                                         }
                                     }
                                     labels(first: 10) {
                                         nodes {
+                                            id
                                             name
                                             color
                                         }
@@ -199,6 +202,7 @@ export const QUERIES = {
                                     additions
                                     deletions
                                     repository {
+                                        id
                                         owner {
                                             login
                                         }
@@ -211,12 +215,14 @@ export const QUERIES = {
                                     }
                                     assignees(first: 5) {
                                         nodes {
+                                            id
                                             login
                                             avatarUrl
                                         }
                                     }
                                     labels(first: 10) {
                                         nodes {
+                                            id
                                             name
                                             color
                                         }

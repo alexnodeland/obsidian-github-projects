@@ -311,6 +311,20 @@ export class GitHubClient {
     }
 
     /**
+     * Create a new label in a repository
+     */
+    async createLabel(repositoryId: string, name: string, color: string): Promise<any> {
+        const data: any = await this.query(MUTATIONS.CREATE_LABEL, {
+            input: {
+                repositoryId,
+                name,
+                color
+            }
+        });
+        return data.createLabel.label;
+    }
+
+    /**
      * Search for users (for assignee/reviewer autocomplete)
      */
     async searchUsers(query: string): Promise<any[]> {
@@ -432,6 +446,7 @@ export class GitHubClient {
 
             // Repository information
             repository: content.repository ? {
+                id: content.repository.id,
                 owner: content.repository.owner?.login || '',
                 name: content.repository.name || '',
                 nameWithOwner: content.repository.nameWithOwner || ''
@@ -443,6 +458,7 @@ export class GitHubClient {
                 avatarUrl: content.author.avatarUrl
             } : undefined,
             labels: content.labels?.nodes?.map((label: any) => ({
+                id: label.id,
                 name: label.name,
                 color: label.color
             })) || [],
@@ -479,6 +495,7 @@ export class GitHubClient {
      */
     private transformAssignees(raw: any[]): Assignee[] {
         return raw.map(assignee => ({
+            id: assignee.id,
             login: assignee.login,
             avatarUrl: assignee.avatarUrl
         }));

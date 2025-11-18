@@ -61,6 +61,7 @@ export interface ProjectItem {
 }
 
 export interface Assignee {
+    id: string;
     login: string;
     avatarUrl: string;
 }
@@ -71,6 +72,7 @@ export interface Author {
 }
 
 export interface Label {
+    id: string;
     name: string;
     color: string;
 }
@@ -81,6 +83,7 @@ export interface Milestone {
 }
 
 export interface Repository {
+    id: string;
     owner: string;
     name: string;
     nameWithOwner: string;
