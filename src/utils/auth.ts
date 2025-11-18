@@ -40,10 +40,10 @@ export class TokenManager {
         // GitHub personal access tokens start with ghp_, gho_, ghu_, or ghs_
         // Fine-grained tokens start with github_pat_
         const patterns = [
-            /^ghp_[a-zA-Z0-9]{36}$/,  // Classic PAT
-            /^gho_[a-zA-Z0-9]{36}$/,  // OAuth token
-            /^ghu_[a-zA-Z0-9]{36}$/,  // User token
-            /^ghs_[a-zA-Z0-9]{36}$/,  // Server token
+            /^ghp_[a-zA-Z0-9]+$/,  // Classic PAT
+            /^gho_[a-zA-Z0-9]+$/,  // OAuth token
+            /^ghu_[a-zA-Z0-9]+$/,  // User token
+            /^ghs_[a-zA-Z0-9]+$/,  // Server token
             /^github_pat_[a-zA-Z0-9_]+$/  // Fine-grained PAT
         ];
 
