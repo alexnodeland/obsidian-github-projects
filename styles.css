@@ -1250,6 +1250,55 @@
   margin-top: 12px;
 }
 
+.create-label-form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.label-name-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 13px;
+}
+
+.label-name-input:focus {
+  outline: none;
+  border-color: var(--interactive-accent);
+}
+
+.label-name-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.create-label-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-width: 40px;
+}
+
+.create-label-button:hover:not(:disabled) {
+  background-color: var(--interactive-accent-hover);
+  transform: translateY(-1px);
+}
+
+.create-label-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .available-labels {
   display: flex;
   flex-wrap: wrap;
