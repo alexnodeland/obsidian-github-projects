@@ -31,7 +31,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
     }, []);
 
     const loadComments = async () => {
-        if (!card.repository || !card.number) return;
+        if (!card.repository || !card.number || card.type === 'DraftIssue') return;
 
         setIsLoadingComments(true);
         try {
@@ -39,7 +39,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
                 card.repository.owner,
                 card.repository.name,
                 card.number,
-                card.type
+                card.type as 'Issue' | 'PullRequest'
             );
             setComments(commentsData);
         } catch (error) {
