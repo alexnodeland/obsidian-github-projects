@@ -24,6 +24,9 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
     const [editedBody, setEditedBody] = useState(card.body || '');
     const [isSaving, setIsSaving] = useState(false);
 
+    // Keep local state in sync with prop changes
+    const [localCard, setLocalCard] = useState(card);
+
     // Resizable layout state
     const [sidebarWidth, setSidebarWidth] = useState(400);
 
@@ -33,10 +36,11 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
     const [isLoadingComments, setIsLoadingComments] = useState(false);
     const [isAddingComment, setIsAddingComment] = useState(false);
     const [isCommentsExpanded, setIsCommentsExpanded] = useState(false);
+    const [isCommentFocused, setIsCommentFocused] = useState(false);
 
     // Labels editing state
     const [isEditingLabels, setIsEditingLabels] = useState(false);
-    const [editedLabels, setEditedLabels] = useState<Label[]>(card.labels || []);
+    const [editedLabels, setEditedLabels] = useState<Label[]>(localCard.labels || []);
     const [availableLabels, setAvailableLabels] = useState<Label[]>([]);
     const [isLoadingLabels, setIsLoadingLabels] = useState(false);
     const [newLabelName, setNewLabelName] = useState('');
@@ -47,7 +51,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
 
     // Assignees editing state
     const [isEditingAssignees, setIsEditingAssignees] = useState(false);
-    const [editedAssignees, setEditedAssignees] = useState<Assignee[]>(card.assignees || []);
+    const [editedAssignees, setEditedAssignees] = useState<Assignee[]>(localCard.assignees || []);
     const [assigneeSearch, setAssigneeSearch] = useState('');
     const [availableUsers, setAvailableUsers] = useState<any[]>([]);
     const [isSearchingUsers, setIsSearchingUsers] = useState(false);
@@ -74,6 +78,11 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
             setIsLoadingComments(false);
         }
     }, [card.repository, card.number, card.type, githubClient]);
+
+    // Sync local card state when card prop changes
+    useEffect(() => {
+        setLocalCard(card);
+    }, [card]);
 
     // Load comments when modal opens (only if comments section is enabled)
     useEffect(() => {
@@ -119,6 +128,8 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
             }
 
             console.log('[CardDetail] Title update successful');
+            // Update local state first so UI reflects changes immediately
+            setLocalCard({ ...localCard, title: editedTitle });
             onUpdate({ title: editedTitle });
             setIsEditingTitle(false);
             success('Title updated successfully');
@@ -151,6 +162,8 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
             } else if (card.type === 'PullRequest') {
                 await githubClient.updatePullRequest(card.contentId, undefined, editedBody);
             }
+            // Update local state first so UI reflects changes immediately
+            setLocalCard({ ...localCard, body: editedBody });
             onUpdate({ body: editedBody });
             setIsEditingBody(false);
             success('Description updated successfully');
@@ -165,11 +178,12 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
     };
 
     const handleAddComment = async () => {
-        if (!newComment.trim() || !card.contentId) return;
+        const commentText = newComment.trim();
+        if (!commentText || !card.contentId) return;
 
         setIsAddingComment(true);
         try {
-            const comment = await githubClient.addComment(card.contentId, newComment);
+            const comment = await githubClient.addComment(card.contentId, commentText);
             setComments([...comments, comment]);
             setNewComment('');
             success('Comment added successfully');
@@ -212,6 +226,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
             // Sync to GitHub
             try {
                 await githubClient.removeLabels(card.contentId, [label.id]);
+                setLocalCard({ ...localCard, labels: newLabels });
                 onUpdate({ labels: newLabels });
                 success('Label removed successfully');
             } catch (error) {
@@ -228,6 +243,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
             // Sync to GitHub
             try {
                 await githubClient.addLabels(card.contentId, [label.id]);
+                setLocalCard({ ...localCard, labels: newLabels });
                 onUpdate({ labels: newLabels });
                 success('Label added successfully');
             } catch (error) {
@@ -271,6 +287,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
             };
             const newLabels = [...editedLabels, newLabel];
             setEditedLabels(newLabels);
+            setLocalCard({ ...localCard, labels: newLabels });
             onUpdate({ labels: newLabels });
 
             // Add to available labels
@@ -331,6 +348,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
             // Sync to GitHub
             try {
                 await githubClient.removeAssignees(card.contentId, [user.id]);
+                setLocalCard({ ...localCard, assignees: newAssignees });
                 onUpdate({ assignees: newAssignees });
                 success('Assignee removed successfully');
             } catch (error) {
@@ -348,6 +366,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
             // Sync to GitHub
             try {
                 await githubClient.addAssignees(card.contentId, [user.id]);
+                setLocalCard({ ...localCard, assignees: newAssignees });
                 onUpdate({ assignees: newAssignees });
                 success('Assignee added successfully');
             } catch (error) {
@@ -365,40 +384,40 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
     const renderBadges = () => {
         const badges = [];
 
-        if (card.state) {
+        if (localCard.state) {
             badges.push(
-                <span className={`state-badge state-${card.state.toLowerCase()}`}>
-                    {card.state}
+                <span className={`state-badge state-${localCard.state.toLowerCase()}`}>
+                    {localCard.state}
                 </span>
             );
         }
 
-        if (card.isDraft) {
+        if (localCard.isDraft) {
             badges.push(<span className="state-badge state-draft">DRAFT</span>);
         }
 
-        if (card.reviewDecision) {
+        if (localCard.reviewDecision) {
             const reviewText = {
                 'APPROVED': '✓ Approved',
                 'CHANGES_REQUESTED': '✗ Changes Requested',
                 'REVIEW_REQUIRED': '👁 Review Required'
-            }[card.reviewDecision];
+            }[localCard.reviewDecision];
             badges.push(
-                <span className={`state-badge state-review-${card.reviewDecision.toLowerCase()}`}>
+                <span className={`state-badge state-review-${localCard.reviewDecision.toLowerCase()}`}>
                     {reviewText}
                 </span>
             );
         }
 
-        if (card.ciStatus) {
+        if (localCard.ciStatus) {
             const ciText = {
                 'SUCCESS': '✓ Checks Passing',
                 'PENDING': '● Checks Pending',
                 'FAILURE': '✗ Checks Failing',
                 'ERROR': '! Checks Error'
-            }[card.ciStatus];
+            }[localCard.ciStatus];
             badges.push(
-                <span className={`state-badge state-ci-${card.ciStatus.toLowerCase()}`}>
+                <span className={`state-badge state-ci-${localCard.ciStatus.toLowerCase()}`}>
                     {ciText}
                 </span>
             );
@@ -432,8 +451,8 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
                 <div className="card-detail-left">
                     {/* Header with number and type */}
                     <div className="card-detail-header">
-                        {card.number && <span className="card-detail-number">#{card.number}</span>}
-                        <span className="card-detail-type">{card.type}</span>
+                        {localCard.number && <span className="card-detail-number">#{localCard.number}</span>}
+                        <span className="card-detail-type">{localCard.type}</span>
                     </div>
 
                     {/* Editable Title */}
@@ -446,10 +465,6 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
                                     value={editedTitle}
                                     onChange={(e) => setEditedTitle((e.target as HTMLInputElement).value)}
                                     onKeyDown={(e) => {
-                                        if (e.key === 'Enter') {
-                                            e.preventDefault();
-                                            handleSaveTitle();
-                                        }
                                         if (e.key === 'Escape') {
                                             setEditedTitle(card.title);
                                             setIsEditingTitle(false);
@@ -478,7 +493,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
                                     </button>
                                 </div>
                                 <div className="editable-field-hint">
-                                    Enter to save, Esc to cancel
+                                    Esc to cancel
                                 </div>
                             </div>
                         ) : (
@@ -487,7 +502,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
                                 onClick={() => setIsEditingTitle(true)}
                                 title="Click to edit title"
                             >
-                                {card.title}
+                                {localCard.title}
                             </h1>
                         )}
                     </div>
@@ -502,10 +517,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
                                     value={editedBody}
                                     onChange={(e) => setEditedBody((e.target as HTMLTextAreaElement).value)}
                                     onKeyDown={(e) => {
-                                        if (e.key === 'Enter' && !e.shiftKey) {
-                                            e.preventDefault();
-                                            handleSaveBody();
-                                        } else if (e.key === 'Escape') {
+                                        if (e.key === 'Escape') {
                                             setEditedBody(card.body || '');
                                             setIsEditingBody(false);
                                         }
@@ -534,7 +546,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
                                     </button>
                                 </div>
                                 <div className="editable-field-hint">
-                                    Enter to save, Shift+Enter for new line, Esc to cancel
+                                    Esc to cancel
                                 </div>
                             </div>
                         ) : (
@@ -543,7 +555,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
                                 onClick={() => setIsEditingBody(true)}
                                 title="Click to edit description"
                             >
-                                {card.body || <span className="empty-field">No description provided. Click to add one.</span>}
+                                {localCard.body || <span className="empty-field">No description provided. Click to add one.</span>}
                             </div>
                         )}
                     </div>
@@ -600,17 +612,12 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
                                         className="comment-input"
                                         placeholder="Write a comment..."
                                         value={newComment}
-                                        onChange={(e) => setNewComment((e.target as HTMLTextAreaElement).value)}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter' && !e.shiftKey) {
-                                                e.preventDefault();
-                                                if (newComment.trim()) {
-                                                    handleAddComment();
-                                                }
-                                            } else if (e.key === 'Escape') {
-                                                setNewComment('');
-                                            }
+                                        onChange={(e) => {
+                                            const value = (e.target as HTMLTextAreaElement).value;
+                                            setNewComment(value);
                                         }}
+                                        onFocus={() => setIsCommentFocused(true)}
+                                        onBlur={() => setIsCommentFocused(false)}
                                         rows={3}
                                         disabled={isAddingComment}
                                     />
@@ -622,7 +629,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
                                         {isAddingComment ? <LoadingSpinner size="small" /> : 'Add Comment'}
                                     </button>
                                     <div className="editable-field-hint">
-                                        Enter to submit, Shift+Enter for new line, Esc to clear
+                                        Use the button to add comment
                                     </div>
                                 </div>
                             </div>
@@ -651,16 +658,16 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
                     )}
 
                     {/* Repository */}
-                    {settings.showRepository && card.repository && (
+                    {settings.showRepository && localCard.repository && (
                         <div className="card-detail-section">
                             <h3>Repository</h3>
                             <a
-                                href={`https://github.com/${card.repository.nameWithOwner}`}
+                                href={`https://github.com/${localCard.repository.nameWithOwner}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="external-link card-repository-link"
                             >
-                                {card.repository.nameWithOwner}
+                                {localCard.repository.nameWithOwner}
                             </a>
                         </div>
                     )}
@@ -674,7 +681,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
                                 className="edit-button"
                                 onClick={() => {
                                     if (!isEditingLabels) {
-                                        setEditedLabels(card.labels || []);
+                                        setEditedLabels(localCard.labels || []);
                                         loadAvailableLabels();
                                     }
                                     setIsEditingLabels(!isEditingLabels);
@@ -765,9 +772,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
                                                     value={newLabelName}
                                                     onChange={(e) => setNewLabelName((e.target as HTMLInputElement).value)}
                                                     onKeyDown={(e) => {
-                                                        if (e.key === 'Enter' && newLabelName.trim()) {
-                                                            handleCreateLabel();
-                                                        } else if (e.key === 'Escape') {
+                                                        if (e.key === 'Escape') {
                                                             setNewLabelName('');
                                                             setNewLabelColor('#0969da');
                                                             setIsCreatingNewLabel(false);
@@ -845,7 +850,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
                                 className="edit-button"
                                 onClick={() => {
                                     if (!isEditingAssignees) {
-                                        setEditedAssignees(card.assignees || []); // Sync local state when entering edit mode
+                                        setEditedAssignees(localCard.assignees || []); // Sync local state when entering edit mode
                                     }
                                     setIsEditingAssignees(!isEditingAssignees);
                                 }}
@@ -920,24 +925,24 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
                     )}
 
                     {/* Author */}
-                    {settings.showAuthor && card.author && (
+                    {settings.showAuthor && localCard.author && (
                         <div className="card-detail-section">
                             <h3>Author</h3>
                             <div className="author-item">
-                                {card.author.avatarUrl && (
-                                    <img src={card.author.avatarUrl} alt={card.author.login} className="author-avatar" />
+                                {localCard.author.avatarUrl && (
+                                    <img src={localCard.author.avatarUrl} alt={localCard.author.login} className="author-avatar" />
                                 )}
-                                <span>{card.author.login}</span>
+                                <span>{localCard.author.login}</span>
                             </div>
                         </div>
                     )}
 
                     {/* Reviewers (for PRs) */}
-                    {settings.showReviewers && card.reviewers && card.reviewers.length > 0 && (
+                    {settings.showReviewers && localCard.reviewers && localCard.reviewers.length > 0 && (
                         <div className="card-detail-section">
                             <h3>Reviewers</h3>
                             <div className="assignee-list">
-                                {card.reviewers.map(reviewer => (
+                                {localCard.reviewers.map(reviewer => (
                                     <div key={reviewer.login} className="assignee-item">
                                         {reviewer.avatarUrl && (
                                             <img src={reviewer.avatarUrl} alt={reviewer.login} />
@@ -950,14 +955,14 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
                     )}
 
                     {/* Milestone */}
-                    {settings.showMilestone && card.milestone && (
+                    {settings.showMilestone && localCard.milestone && (
                         <div className="card-detail-section">
                             <h3>Milestone</h3>
                             <div className="milestone-info">
-                                🎯 {card.milestone.title}
-                                {card.milestone.dueOn && (
+                                🎯 {localCard.milestone.title}
+                                {localCard.milestone.dueOn && (
                                     <div className="milestone-due">
-                                        Due: {new Date(card.milestone.dueOn).toLocaleDateString()}
+                                        Due: {new Date(localCard.milestone.dueOn).toLocaleDateString()}
                                     </div>
                                 )}
                             </div>
@@ -965,27 +970,27 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
                     )}
 
                     {/* PR Changes */}
-                    {settings.showPRChanges && card.type === 'PullRequest' && (card.additions !== undefined || card.deletions !== undefined) && (
+                    {settings.showPRChanges && localCard.type === 'PullRequest' && (localCard.additions !== undefined || localCard.deletions !== undefined) && (
                         <div className="card-detail-section">
                             <h3>Changes</h3>
                             <div className="pr-changes-text">
-                                <span className="pr-additions">+{card.additions || 0}</span>
+                                <span className="pr-additions">+{localCard.additions || 0}</span>
                                 {' / '}
-                                <span className="pr-deletions">-{card.deletions || 0}</span>
+                                <span className="pr-deletions">-{localCard.deletions || 0}</span>
                             </div>
                         </div>
                     )}
 
                     {/* Engagement */}
-                    {settings.showEngagement && ((card.commentCount && card.commentCount > 0) || (card.reactionCount && card.reactionCount > 0)) && (
+                    {settings.showEngagement && ((localCard.commentCount && localCard.commentCount > 0) || (localCard.reactionCount && localCard.reactionCount > 0)) && (
                         <div className="card-detail-section">
                             <h3>Engagement</h3>
                             <div className="engagement-info">
-                                {card.commentCount !== undefined && card.commentCount > 0 && (
-                                    <div>💬 {card.commentCount} comments</div>
+                                {localCard.commentCount !== undefined && localCard.commentCount > 0 && (
+                                    <div>💬 {localCard.commentCount} comments</div>
                                 )}
-                                {card.reactionCount !== undefined && card.reactionCount > 0 && (
-                                    <div>👍 {card.reactionCount} reactions</div>
+                                {localCard.reactionCount !== undefined && localCard.reactionCount > 0 && (
+                                    <div>👍 {localCard.reactionCount} reactions</div>
                                 )}
                             </div>
                         </div>
@@ -996,28 +1001,28 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
                         <div className="card-detail-section">
                         <h3>Timeline</h3>
                         <div className="timestamps-list">
-                            {card.createdAt && (
+                            {localCard.createdAt && (
                                 <div className="timestamp-item">
                                     <span className="timestamp-label">Created:</span>
-                                    <span className="timestamp-value">{new Date(card.createdAt).toLocaleDateString()}</span>
+                                    <span className="timestamp-value">{new Date(localCard.createdAt).toLocaleDateString()}</span>
                                 </div>
                             )}
-                            {card.updatedAt && (
+                            {localCard.updatedAt && (
                                 <div className="timestamp-item">
                                     <span className="timestamp-label">Updated:</span>
-                                    <span className="timestamp-value">{new Date(card.updatedAt).toLocaleDateString()}</span>
+                                    <span className="timestamp-value">{new Date(localCard.updatedAt).toLocaleDateString()}</span>
                                 </div>
                             )}
-                            {card.closedAt && (
+                            {localCard.closedAt && (
                                 <div className="timestamp-item">
                                     <span className="timestamp-label">Closed:</span>
-                                    <span className="timestamp-value">{new Date(card.closedAt).toLocaleDateString()}</span>
+                                    <span className="timestamp-value">{new Date(localCard.closedAt).toLocaleDateString()}</span>
                                 </div>
                             )}
-                            {card.mergedAt && (
+                            {localCard.mergedAt && (
                                 <div className="timestamp-item">
                                     <span className="timestamp-label">Merged:</span>
-                                    <span className="timestamp-value">{new Date(card.mergedAt).toLocaleDateString()}</span>
+                                    <span className="timestamp-value">{new Date(localCard.mergedAt).toLocaleDateString()}</span>
                                 </div>
                             )}
                         </div>
@@ -1025,10 +1030,10 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
                     )}
 
                     {/* GitHub Link */}
-                    {card.url && (
+                    {localCard.url && (
                         <div className="card-detail-section">
                             <a
-                                href={card.url}
+                                href={localCard.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="external-link github-link-button"
