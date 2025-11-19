@@ -5,15 +5,17 @@ import { Column as ColumnType, ProjectItem } from '../../api/types';
 import { Card } from './Card';
 import { ColumnFilters, FilterOptions, SortOption } from './ColumnFilters';
 import { filterCards, sortCards, extractFilterOptions } from '../../utils/card-filters';
+import { CardDisplaySettings } from '../../settings';
 
 interface ColumnProps {
     column: ColumnType;
     onCardMove: (cardId: string, toColumnId: string) => void;
     onCardClick: (card: ProjectItem) => void;
     hideFilters?: boolean;
+    cardSettings: CardDisplaySettings;
 }
 
-export const Column = ({ column, onCardMove, onCardClick, hideFilters = false }: ColumnProps) => {
+export const Column = ({ column, onCardMove, onCardClick, hideFilters = false, cardSettings }: ColumnProps) => {
     const columnRef = useRef<HTMLDivElement>(null);
     const sortableRef = useRef<Sortable | null>(null);
     const [filters, setFilters] = useState<FilterOptions>({
@@ -100,6 +102,7 @@ export const Column = ({ column, onCardMove, onCardClick, hideFilters = false }:
                         key={card.id}
                         card={card}
                         onClick={onCardClick}
+                        settings={cardSettings}
                     />
                 ))}
             </div>

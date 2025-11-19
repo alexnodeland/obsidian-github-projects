@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Extensive customization options** for card and modal displays
+  - Configure card title length and description truncation
+  - Show/hide repository, labels, description, milestone on cards
+  - Control maximum number of labels and assignees displayed
+  - Show/hide PR changes, author, assignees, comments, reactions
+  - Configure detail modal sections visibility (status badges, repository, labels, assignees, author, reviewers, milestone, PR changes, engagement, timeline, comments)
+  - All settings applied immediately with real-time preview
+  - Backwards compatible with existing settings
+
 ## [0.1.0] - 2025-01-XX
 
 ### Added

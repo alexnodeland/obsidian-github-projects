@@ -7,14 +7,16 @@ import { EmptyState } from './EmptyState';
 import { GlobalFilters, GlobalFilterOptions } from './GlobalFilters';
 import { SortOption } from './ColumnFilters';
 import { filterCards, sortCards, extractFilterOptions } from '../../utils/card-filters';
+import { CardDisplaySettings } from '../../settings';
 
 interface BoardProps {
     state: ProjectState;
     onCardMove: (cardId: string, toColumnId: string) => void;
     onCardClick: (card: ProjectItem) => void;
+    cardSettings: CardDisplaySettings;
 }
 
-export const Board = ({ state, onCardMove, onCardClick }: BoardProps) => {
+export const Board = ({ state, onCardMove, onCardClick, cardSettings }: BoardProps) => {
     const [columns, setColumns] = useState<ColumnType[]>([]);
     const [loading, setLoading] = useState(true);
     const [globalFilters, setGlobalFilters] = useState<GlobalFilterOptions>({
@@ -105,6 +107,7 @@ export const Board = ({ state, onCardMove, onCardClick }: BoardProps) => {
                         onCardMove={onCardMove}
                         onCardClick={onCardClick}
                         hideFilters={true}
+                        cardSettings={cardSettings}
                     />
                 ))}
             </div>

@@ -1,13 +1,15 @@
 import { h } from 'preact';
 import { ProjectItem } from '../../api/types';
 import { truncate, getInitials, formatRelativeTime } from '../../utils/formatting';
+import { CardDisplaySettings } from '../../settings';
 
 interface CardProps {
     card: ProjectItem;
     onClick: (card: ProjectItem) => void;
+    settings: CardDisplaySettings;
 }
 
-export const Card = ({ card, onClick }: CardProps) => {
+export const Card = ({ card, onClick, settings }: CardProps) => {
     const handleClick = () => {
         onClick(card);
     };
@@ -57,7 +59,7 @@ export const Card = ({ card, onClick }: CardProps) => {
             <div className="card-header">
                 <div className="card-title">
                     {card.number && `#${card.number} `}
-                    {truncate(card.title, 80)}
+                    {truncate(card.title, settings.titleLength)}
                 </div>
                 <div className="card-header-badges">
                     {isUnavailable && (
@@ -72,16 +74,16 @@ export const Card = ({ card, onClick }: CardProps) => {
             </div>
 
             {/* Repository */}
-            {card.repository && (
+            {settings.showRepository && card.repository && (
                 <div className="card-repository" title={`Repository: ${card.repository.nameWithOwner}`}>
                     {card.repository.nameWithOwner}
                 </div>
             )}
 
             {/* Labels */}
-            {card.labels && card.labels.length > 0 && (
+            {settings.showLabels && card.labels && card.labels.length > 0 && (
                 <div className="card-labels">
-                    {card.labels.slice(0, 3).map(label => (
+                    {card.labels.slice(0, settings.maxLabels).map(label => (
                         <span
                             key={label.name}
                             className="card-label"
@@ -91,30 +93,30 @@ export const Card = ({ card, onClick }: CardProps) => {
                             {label.name}
                         </span>
                     ))}
-                    {card.labels.length > 3 && (
-                        <span className="card-label-more" title={`+${card.labels.length - 3} more labels`}>
-                            +{card.labels.length - 3}
+                    {card.labels.length > settings.maxLabels && (
+                        <span className="card-label-more" title={`+${card.labels.length - settings.maxLabels} more labels`}>
+                            +{card.labels.length - settings.maxLabels}
                         </span>
                     )}
                 </div>
             )}
 
             {/* Description */}
-            {card.body && (
+            {settings.showDescription && card.body && (
                 <div className="card-description">
-                    {truncate(card.body, 100)}
+                    {truncate(card.body, settings.descriptionLength)}
                 </div>
             )}
 
             {/* Milestone */}
-            {card.milestone && (
+            {settings.showMilestone && card.milestone && (
                 <div className="card-milestone" title={`Milestone: ${card.milestone.title}`}>
                     🎯 {card.milestone.title}
                 </div>
             )}
 
             {/* PR Changes */}
-            {card.type === 'PullRequest' && (card.additions !== undefined || card.deletions !== undefined) && (
+            {settings.showPRChanges && card.type === 'PullRequest' && (card.additions !== undefined || card.deletions !== undefined) && (
                 <div className="card-pr-changes">
                     {card.additions !== undefined && (
                         <span className="pr-additions" title={`${card.additions} additions`}>
@@ -132,7 +134,7 @@ export const Card = ({ card, onClick }: CardProps) => {
             {/* Metadata row */}
             <div className="card-metadata">
                 {/* Author */}
-                {card.author && (
+                {settings.showAuthor && card.author && (
                     <div className="card-author" title={`Created by ${card.author.login}`}>
                         {card.author.avatarUrl ? (
                             <img
@@ -148,9 +150,9 @@ export const Card = ({ card, onClick }: CardProps) => {
                 )}
 
                 {/* Assignees */}
-                {card.assignees.length > 0 && (
+                {settings.showAssignees && card.assignees.length > 0 && (
                     <div className="card-assignees">
-                        {card.assignees.slice(0, 2).map(assignee => (
+                        {card.assignees.slice(0, settings.maxAssignees).map(assignee => (
                             <div key={assignee.login} className="card-assignee">
                                 {assignee.avatarUrl ? (
                                     <img
@@ -165,37 +167,39 @@ export const Card = ({ card, onClick }: CardProps) => {
                                 )}
                             </div>
                         ))}
-                        {card.assignees.length > 2 && (
+                        {card.assignees.length > settings.maxAssignees && (
                             <div className="assignee-more">
-                                +{card.assignees.length - 2}
+                                +{card.assignees.length - settings.maxAssignees}
                             </div>
                         )}
                     </div>
                 )}
 
                 {/* Engagement metrics */}
-                <div className="card-engagement">
-                    {card.commentCount !== undefined && card.commentCount > 0 && (
-                        <span className="engagement-item" title={`${card.commentCount} comments`}>
-                            💬 {card.commentCount}
-                        </span>
-                    )}
-                    {card.reactionCount !== undefined && card.reactionCount > 0 && (
-                        <span className="engagement-item" title={`${card.reactionCount} reactions`}>
-                            👍 {card.reactionCount}
-                        </span>
-                    )}
-                </div>
+                {(settings.showCommentCount || settings.showReactionCount) && (
+                    <div className="card-engagement">
+                        {settings.showCommentCount && card.commentCount !== undefined && card.commentCount > 0 && (
+                            <span className="engagement-item" title={`${card.commentCount} comments`}>
+                                💬 {card.commentCount}
+                            </span>
+                        )}
+                        {settings.showReactionCount && card.reactionCount !== undefined && card.reactionCount > 0 && (
+                            <span className="engagement-item" title={`${card.reactionCount} reactions`}>
+                                👍 {card.reactionCount}
+                            </span>
+                        )}
+                    </div>
+                )}
 
                 {/* Timestamp */}
-                {card.updatedAt && (
+                {settings.showUpdatedTime && card.updatedAt && (
                     <div className="card-timestamp" title={new Date(card.updatedAt).toLocaleString()}>
                         {formatRelativeTime(card.updatedAt)}
                     </div>
                 )}
 
                 {/* State badge */}
-                {card.state && (
+                {settings.showState && card.state && (
                     <div className={`card-state card-state-${card.state.toLowerCase()}`}>
                         {card.state}
                     </div>

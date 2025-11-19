@@ -118,6 +118,7 @@ export class ProjectBoardView extends ItemView {
                             state={this.plugin.projectState}
                             onCardMove={this.handleCardMove.bind(this)}
                             onCardClick={this.handleCardClick.bind(this)}
+                            cardSettings={this.plugin.settings.cardDisplay}
                         />
                         <ToastContainer toasts={toasts} onClose={close} />
                     </div>
@@ -183,7 +184,8 @@ export class ProjectBoardView extends ItemView {
             (_updatedCard) => {
                 // Refresh the board to show updated card
                 this.refresh();
-            }
+            },
+            this.plugin.settings.modalDisplay
         ).open();
     }
 

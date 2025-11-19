@@ -1,19 +1,21 @@
 import { h, Fragment } from 'preact';
-import { useState, useEffect, useRef } from 'preact/hooks';
+import { useState, useEffect, useRef, useCallback } from 'preact/hooks';
 import { ProjectItem, Label, Assignee, Comment } from '../../api/types';
 import { GitHubClient } from '../../api/github-client';
 import { ResizeHandle } from './ResizeHandle';
 import { LoadingSpinner } from './LoadingSpinner';
 import { useToasts } from './Toast';
+import { ModalDisplaySettings } from '../../settings';
 
 interface CardDetailContentProps {
     card: ProjectItem;
     githubClient: GitHubClient;
     onUpdate: (updatedCard: Partial<ProjectItem>) => void;
     onClose: () => void;
+    settings: ModalDisplaySettings;
 }
 
-export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: CardDetailContentProps) => {
+export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, settings }: CardDetailContentProps) => {
     const { success, error: showError, info: _info } = useToasts();
 
     const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -53,14 +55,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
     // Refs for resize containers
     const mainContainerRef = useRef<HTMLDivElement>(null);
 
-    // Load comments when modal opens
-    useEffect(() => {
-        if (card.repository && card.number && card.type !== 'DraftIssue') {
-            loadComments();
-        }
-    }, []);
-
-    const loadComments = async () => {
+    const loadComments = useCallback(async () => {
         if (!card.repository || !card.number || card.type === 'DraftIssue') return;
 
         setIsLoadingComments(true);
@@ -77,7 +72,14 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
         } finally {
             setIsLoadingComments(false);
         }
-    };
+    }, [card.repository, card.number, card.type, githubClient]);
+
+    // Load comments when modal opens (only if comments section is enabled)
+    useEffect(() => {
+        if (settings.showComments && card.repository && card.number && card.type !== 'DraftIssue') {
+            loadComments();
+        }
+    }, [settings.showComments, card.repository, card.number, card.type, loadComments]);
 
     const handleSaveTitle = async () => {
         console.log('[CardDetail] handleSaveTitle called', {
@@ -502,18 +504,19 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
                     </div>
 
                     {/* Collapsible Comments Section */}
-                    <div className={`card-detail-comments-section ${isCommentsExpanded ? 'expanded' : 'collapsed'}`}>
-                        <div
-                            className="comments-header-bar"
-                            onClick={() => setIsCommentsExpanded(!isCommentsExpanded)}
-                        >
-                            <h3>Comments ({comments.length})</h3>
-                            <button className="comments-toggle-button" title={isCommentsExpanded ? 'Collapse comments' : 'Expand comments'}>
-                                {isCommentsExpanded ? '▼' : '▶'}
-                            </button>
-                        </div>
+                    {settings.showComments && (
+                        <div className={`card-detail-comments-section ${isCommentsExpanded ? 'expanded' : 'collapsed'}`}>
+                            <div
+                                className="comments-header-bar"
+                                onClick={() => setIsCommentsExpanded(!isCommentsExpanded)}
+                            >
+                                <h3>Comments ({comments.length})</h3>
+                                <button className="comments-toggle-button" title={isCommentsExpanded ? 'Collapse comments' : 'Expand comments'}>
+                                    {isCommentsExpanded ? '▼' : '▶'}
+                                </button>
+                            </div>
 
-                        {isCommentsExpanded && (
+                            {isCommentsExpanded && (
                             <div className="comments-expanded-content">
                                 {/* Scrollable comments list */}
                                 <div className="comments-list">
@@ -565,8 +568,9 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
                                     </button>
                                 </div>
                             </div>
-                        )}
-                    </div>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* Right column - Metadata with resizable width */}
@@ -579,7 +583,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
                         }}
                     />
                     {/* Status Badges */}
-                    {renderBadges().length > 0 && (
+                    {settings.showStatusBadges && renderBadges().length > 0 && (
                         <div className="card-detail-section">
                             <h3>Status</h3>
                             <div className="card-detail-badges">
@@ -589,7 +593,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
                     )}
 
                     {/* Repository */}
-                    {card.repository && (
+                    {settings.showRepository && card.repository && (
                         <div className="card-detail-section">
                             <h3>Repository</h3>
                             <a
@@ -604,7 +608,8 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
                     )}
 
                     {/* Labels - Editable with reorganized UI */}
-                    <div className="card-detail-section">
+                    {settings.showLabels && (
+                        <div className="card-detail-section">
                         <div className="section-header-with-edit">
                             <h3>Labels</h3>
                             <button
@@ -757,10 +762,12 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
                                 <div className="empty-field-small">No labels</div>
                             )
                         )}
-                    </div>
+                        </div>
+                    )}
 
                     {/* Assignees - Editable */}
-                    <div className="card-detail-section">
+                    {settings.showAssignees && (
+                        <div className="card-detail-section">
                         <div className="section-header-with-edit">
                             <h3>Assignees</h3>
                             <button
@@ -838,10 +845,11 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
                         {!isEditingAssignees && editedAssignees.length === 0 && (
                             <div className="empty-field-small">No assignees</div>
                         )}
-                    </div>
+                        </div>
+                    )}
 
                     {/* Author */}
-                    {card.author && (
+                    {settings.showAuthor && card.author && (
                         <div className="card-detail-section">
                             <h3>Author</h3>
                             <div className="author-item">
@@ -854,7 +862,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
                     )}
 
                     {/* Reviewers (for PRs) */}
-                    {card.reviewers && card.reviewers.length > 0 && (
+                    {settings.showReviewers && card.reviewers && card.reviewers.length > 0 && (
                         <div className="card-detail-section">
                             <h3>Reviewers</h3>
                             <div className="assignee-list">
@@ -871,7 +879,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
                     )}
 
                     {/* Milestone */}
-                    {card.milestone && (
+                    {settings.showMilestone && card.milestone && (
                         <div className="card-detail-section">
                             <h3>Milestone</h3>
                             <div className="milestone-info">
@@ -886,7 +894,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
                     )}
 
                     {/* PR Changes */}
-                    {card.type === 'PullRequest' && (card.additions !== undefined || card.deletions !== undefined) && (
+                    {settings.showPRChanges && card.type === 'PullRequest' && (card.additions !== undefined || card.deletions !== undefined) && (
                         <div className="card-detail-section">
                             <h3>Changes</h3>
                             <div className="pr-changes-text">
@@ -898,7 +906,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
                     )}
 
                     {/* Engagement */}
-                    {((card.commentCount && card.commentCount > 0) || (card.reactionCount && card.reactionCount > 0)) && (
+                    {settings.showEngagement && ((card.commentCount && card.commentCount > 0) || (card.reactionCount && card.reactionCount > 0)) && (
                         <div className="card-detail-section">
                             <h3>Engagement</h3>
                             <div className="engagement-info">
@@ -913,7 +921,8 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
                     )}
 
                     {/* Timestamps */}
-                    <div className="card-detail-section">
+                    {settings.showTimeline && (
+                        <div className="card-detail-section">
                         <h3>Timeline</h3>
                         <div className="timestamps-list">
                             {card.createdAt && (
@@ -941,7 +950,8 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: Car
                                 </div>
                             )}
                         </div>
-                    </div>
+                        </div>
+                    )}
 
                     {/* GitHub Link */}
                     {card.url && (
