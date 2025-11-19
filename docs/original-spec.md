@@ -1625,15 +1625,14 @@ Prepare `manifest.json` with required fields (id, name, version, minAppVersion, 
 
 ```json
 {
-    “id”: “github-projects”,
-    “name”: “GitHub Projects”,
-    “version”: “1.0.0”,
-    “minAppVersion”: “0.15.0”,
-    “description”: “Manage GitHub Projects with Kanban boards in Obsidian”,
-    “author”: “Your Name”,
-    “authorUrl”: “https://github.com/yourusername”,
-    “fundingUrl”: “https://buymeacoffee.com/yourusername”,
-    “isDesktopOnly”: false
+    "id": "github-projects",
+    "name": "GitHub Projects",
+    "version": "0.1.0",
+    "minAppVersion": "0.15.0",
+    "description": "Manage GitHub Projects with Kanban boards in Obsidian",
+    "author": "Alex Nodeland",
+    "authorUrl": "https://github.com/alexnodeland/obsidian-github-projects",
+    "isDesktopOnly": false
 }
 ```
 
