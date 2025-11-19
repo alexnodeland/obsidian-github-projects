@@ -108,7 +108,8 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
             <br>
             <strong>Required Token Permissions:</strong><br>
             • Fine-grained token: "Projects: Read and Write"<br>
-            • Classic token: "project" scope<br>
+            • Classic token: "project" and "repo" scopes<br>
+            • For organization projects: Also add "read:org" scope<br>
             <br>
             Create token at: <a href="https://github.com/settings/tokens" target="_blank">github.com/settings/tokens</a>
         `;
@@ -176,11 +177,19 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
                 });
         }
 
-        containerEl.createEl('h3', { text: 'Project Configuration' });
+        containerEl.createEl('h3', { text: 'Default Project (Optional)' });
+
+        const defaultProjectInfo = containerEl.createDiv({ cls: 'setting-item-description' });
+        defaultProjectInfo.style.marginBottom = '12px';
+        defaultProjectInfo.innerHTML = `
+            <strong>📌 Set a default project to load on startup</strong><br>
+            Leave empty to choose a project each time you open the board.<br>
+            You can always switch projects using the dropdown in the board view.
+        `;
 
         new Setting(containerEl)
-            .setName('Project Owner Type')
-            .setDesc('Is this a personal or organization project?')
+            .setName('Default Project Owner Type')
+            .setDesc('Is the default project a personal or organization project?')
             .addDropdown(dropdown => dropdown
                 .addOption('user', 'Personal Account')
                 .addOption('organization', 'Organization')
@@ -194,8 +203,8 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
         // Only show owner field for organizations
         if (this.plugin.settings.ownerType === 'organization') {
             new Setting(containerEl)
-                .setName('Organization')
-                .setDesc('GitHub organization name (e.g., "octo-org")')
+                .setName('Default Organization')
+                .setDesc('GitHub organization name for the default project (e.g., "octo-org")')
                 .addText(text => text
                     .setPlaceholder('octo-org')
                     .setValue(this.plugin.settings.owner)
@@ -210,7 +219,7 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
             infoEl.style.marginBottom = '12px';
             infoEl.innerHTML = `
                 <strong>ℹ️ Personal Projects:</strong><br>
-                Personal projects are accessed using your authenticated token.<br>
+                Your personal projects will be loaded based on your token.<br>
                 No username configuration needed.
             `;
         }
@@ -220,16 +229,22 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
             : 'github.com/orgs/octo-org/projects/5';
 
         new Setting(containerEl)
-            .setName('Project Number')
-            .setDesc(`Project number from the URL (e.g., 5 from ${projectUrlExample})`)
+            .setName('Default Project Number')
+            .setDesc(`Project number from the URL (e.g., 5 from ${projectUrlExample}) - Leave empty for project selector`)
             .addText(text => text
-                .setPlaceholder('5')
-                .setValue(String(this.plugin.settings.projectNumber))
+                .setPlaceholder('5 (leave empty for selector)')
+                .setValue(this.plugin.settings.projectNumber > 0 ? String(this.plugin.settings.projectNumber) : '')
                 .onChange(async (value) => {
-                    const num = parseInt(value);
-                    if (!isNaN(num) && num > 0) {
-                        this.plugin.settings.projectNumber = num;
+                    if (value === '' || value === '0') {
+                        // Clear the default project
+                        this.plugin.settings.projectNumber = 0;
                         await this.plugin.saveSettings();
+                    } else {
+                        const num = parseInt(value);
+                        if (!isNaN(num) && num > 0) {
+                            this.plugin.settings.projectNumber = num;
+                            await this.plugin.saveSettings();
+                        }
                     }
                 }));
 

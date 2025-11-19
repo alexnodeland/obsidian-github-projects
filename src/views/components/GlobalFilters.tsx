@@ -1,6 +1,7 @@
 import { h } from 'preact';
 import { useState } from 'preact/hooks';
 import { SortOption } from './ColumnFilters';
+import { ProjectSummary } from '../../api/types';
 
 export interface GlobalFilterOptions {
     search: string;
@@ -21,6 +22,9 @@ interface GlobalFiltersProps {
     availableRepositories: string[];
     totalCards: number;
     filteredCards: number;
+    availableProjects?: ProjectSummary[];
+    currentProject?: { owner: string; number: number; ownerType: 'user' | 'organization' };
+    onProjectChange?: (project: ProjectSummary) => void;
 }
 
 export const GlobalFilters = ({
@@ -31,6 +35,9 @@ export const GlobalFilters = ({
     availableRepositories,
     totalCards,
     filteredCards,
+    availableProjects = [],
+    currentProject,
+    onProjectChange,
 }: GlobalFiltersProps) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [search, setSearch] = useState('');
@@ -102,6 +109,23 @@ export const GlobalFilters = ({
     const hasActiveFilters = search !== '' || selectedRepositories.length > 0 ||
         selectedLabels.length > 0 || selectedAssignees.length > 0;
 
+    const handleProjectChange = (e: Event) => {
+        const selectedValue = (e.target as HTMLSelectElement).value;
+        const selectedProject = availableProjects.find(p =>
+            `${p.ownerType}-${p.owner}-${p.number}` === selectedValue
+        );
+        if (selectedProject && onProjectChange) {
+            onProjectChange(selectedProject);
+        }
+    };
+
+    const currentProjectKey = currentProject
+        ? `${currentProject.ownerType}-${currentProject.owner}-${currentProject.number}`
+        : '';
+
+    // Filter out closed projects by default
+    const openProjects = availableProjects.filter(p => !p.closed);
+
     return (
         <div className="global-filters">
             <div className="global-filters-header">
@@ -113,6 +137,31 @@ export const GlobalFilters = ({
                     onInput={handleSearchChange}
                 />
                 <div className="global-filters-summary">
+                    {/* Show project switcher if we have projects (open or closed) and the callback is defined */}
+                    {availableProjects && availableProjects.length > 0 && onProjectChange && (
+                        <select
+                            className="project-switcher-dropdown"
+                            value={currentProjectKey}
+                            onChange={handleProjectChange}
+                            title="Switch project"
+                        >
+                            {openProjects.length === 0 ? (
+                                <option value="" disabled>No open projects (all closed)</option>
+                            ) : (
+                                openProjects.map(project => {
+                                    const key = `${project.ownerType}-${project.owner}-${project.number}`;
+                                    const label = project.ownerType === 'user'
+                                        ? `${project.title}`
+                                        : `${project.title} (${project.owner})`;
+                                    return (
+                                        <option key={key} value={key}>
+                                            {label}
+                                        </option>
+                                    );
+                                })
+                            )}
+                        </select>
+                    )}
                     <span className="filtered-count">
                         Showing {filteredCards} of {totalCards} cards
                     </span>

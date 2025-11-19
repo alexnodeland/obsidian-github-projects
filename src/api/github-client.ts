@@ -8,7 +8,9 @@ import {
     GraphQLResponse,
     RateLimit,
     Assignee,
-    FieldValue
+    FieldValue,
+    ProjectSummary,
+    Organization
 } from './types';
 
 export class GitHubClient {
@@ -332,6 +334,147 @@ export class GitHubClient {
             query
         });
         return data.search.nodes;
+    }
+
+    /**
+     * Fetch all projects for the current user
+     */
+    async fetchUserProjects(): Promise<ProjectSummary[]> {
+        const projects: ProjectSummary[] = [];
+        let cursor: string | null = null;
+        let hasNextPage = true;
+
+        while (hasNextPage) {
+            const data: any = await this.query(QUERIES.GET_USER_PROJECTS, { cursor });
+            const result = data.viewer.projectsV2;
+            const userLogin = data.viewer.login;
+
+            result.nodes.forEach((node: any) => {
+                projects.push({
+                    id: node.id,
+                    title: node.title,
+                    url: node.url,
+                    number: node.number,
+                    owner: userLogin,
+                    ownerType: 'user',
+                    closed: node.closed || false
+                });
+            });
+
+            hasNextPage = result.pageInfo.hasNextPage;
+            cursor = result.pageInfo.endCursor;
+        }
+
+        return projects;
+    }
+
+    /**
+     * Fetch all organizations the user belongs to
+     */
+    async fetchUserOrganizations(): Promise<Organization[]> {
+        const organizations: Organization[] = [];
+        let cursor: string | null = null;
+        let hasNextPage = true;
+
+        while (hasNextPage) {
+            const data: any = await this.query(QUERIES.GET_VIEWER_ORGANIZATIONS, { cursor });
+            const result = data.viewer.organizations;
+
+            result.nodes.forEach((node: any) => {
+                organizations.push({
+                    login: node.login,
+                    name: node.name
+                });
+            });
+
+            hasNextPage = result.pageInfo.hasNextPage;
+            cursor = result.pageInfo.endCursor;
+        }
+
+        return organizations;
+    }
+
+    /**
+     * Fetch all projects for a specific organization
+     */
+    async fetchOrganizationProjects(orgLogin: string): Promise<ProjectSummary[]> {
+        const projects: ProjectSummary[] = [];
+        let cursor: string | null = null;
+        let hasNextPage = true;
+
+        while (hasNextPage) {
+            const data: any = await this.query(QUERIES.GET_ORGANIZATION_PROJECTS, {
+                org: orgLogin,
+                cursor
+            });
+            const result = data.organization.projectsV2;
+
+            result.nodes.forEach((node: any) => {
+                projects.push({
+                    id: node.id,
+                    title: node.title,
+                    url: node.url,
+                    number: node.number,
+                    owner: orgLogin,
+                    ownerType: 'organization',
+                    closed: node.closed || false
+                });
+            });
+
+            hasNextPage = result.pageInfo.hasNextPage;
+            cursor = result.pageInfo.endCursor;
+        }
+
+        return projects;
+    }
+
+    /**
+     * Fetch all accessible projects (user + all organizations)
+     */
+    async fetchAllAccessibleProjects(): Promise<ProjectSummary[]> {
+        const allProjects: ProjectSummary[] = [];
+
+        // Fetch user projects (these don't require read:org scope)
+        try {
+            const userProjects = await this.fetchUserProjects();
+            allProjects.push(...userProjects);
+        } catch (error) {
+            console.error('Failed to fetch user projects:', error);
+        }
+
+        // Fetch organizations and their projects (requires read:org scope)
+        // This is optional - if the token doesn't have read:org scope, we'll just skip org projects
+        try {
+            const organizations = await this.fetchUserOrganizations();
+
+            for (const org of organizations) {
+                try {
+                    const orgProjects = await this.fetchOrganizationProjects(org.login);
+                    allProjects.push(...orgProjects);
+                } catch (error) {
+                    console.error(`Failed to fetch projects for org ${org.login}:`, error);
+                    // Continue with other organizations
+                }
+            }
+        } catch (error: any) {
+            // Check if it's a scope issue
+            if (error.message?.includes('INSUFFICIENT_SCOPES') || error.message?.includes('read:org')) {
+                console.warn('Token lacks read:org scope. Only showing personal projects.');
+                console.warn('To see organization projects, add the "read:org" scope to your GitHub token at: https://github.com/settings/tokens');
+            } else {
+                console.error('Failed to fetch organizations:', error);
+            }
+        }
+
+        // Sort by owner type (user first), then by title
+        allProjects.sort((a, b) => {
+            if (a.ownerType !== b.ownerType) {
+                return a.ownerType === 'user' ? -1 : 1;
+            }
+            return a.title.localeCompare(b.title);
+        });
+
+        return allProjects;
     }
 
     /**

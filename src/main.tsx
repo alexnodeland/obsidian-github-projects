@@ -5,6 +5,7 @@ import { SyncManager } from './state/sync';
 import { APICache } from './state/cache';
 import { TokenManager } from './utils/auth';
 import { displayError } from './utils/error-handling';
+import { ProjectSummary } from './api/types';
 import {
     GitHubProjectsSettings,
     GitHubProjectsSettingTab,
@@ -22,6 +23,7 @@ export default class GitHubProjectsPlugin extends Plugin {
     syncManager: SyncManager | null = null;
     private cache: APICache;
     private githubClient: GitHubClient | null = null;
+    public availableProjects: ProjectSummary[] = [];
 
     async onload() {
         console.log('Loading GitHub Projects plugin');
@@ -115,6 +117,36 @@ export default class GitHubProjectsPlugin extends Plugin {
     }
 
     /**
+     * Fetch all accessible projects (user + organizations)
+     */
+    async fetchAllProjects(): Promise<void> {
+        const client = this.getGitHubClient();
+        if (!client) {
+            console.warn('No GitHub client available for fetching projects');
+            return;
+        }
+
+        try {
+            const cacheKey = 'all-accessible-projects';
+
+            // Force refresh the projects list on first load to ensure we have latest data
+            // This helps when switching vaults or after plugin updates
+            this.cache.invalidate(cacheKey);
+
+            const projects = await client.fetchAllAccessibleProjects();
+            this.availableProjects = projects || [];
+
+            if (this.availableProjects.length > 0) {
+                console.log(`Fetched ${this.availableProjects.length} accessible projects for project switcher`);
+            }
+        } catch (error) {
+            console.error('Failed to fetch accessible projects:', error);
+            // Don't throw - project switcher is optional
+            this.availableProjects = [];
+        }
+    }
+
+    /**
      * Load project data from GitHub
      */
     async loadProjectData(): Promise<void> {
@@ -196,6 +228,44 @@ export default class GitHubProjectsPlugin extends Plugin {
         if (leaf) {
             workspace.revealLeaf(leaf);
         }
+    }
+
+    /**
+     * Switch to a different project
+     */
+    async switchProject(project: ProjectSummary): Promise<void> {
+        // Show loading notice
+        new Notice(`Switching to project: ${project.title}...`);
+
+        // Update settings
+        this.settings.owner = project.owner;
+        this.settings.projectNumber = project.number;
+        this.settings.ownerType = project.ownerType;
+        await this.saveSettings();
+
+        // Clear cache for old project
+        this.cache.invalidate();
+
+        // Stop old sync manager
+        if (this.syncManager) {
+            this.syncManager.destroy();
+            this.syncManager = null;
+        }
+
+        // Clear the current project state
+        this.projectState = new ProjectState();
+
+        // Load the new project data
+        try {
+            await this.loadProjectData();
+            new Notice(`✓ Switched to project: ${project.title}`);
+        } catch (error) {
+            console.error('Failed to load new project data:', error);
+            new Notice(`Failed to load project: ${project.title}`);
+        }
+
+        // Refresh all views to show new data
+        this.refreshViews();
     }
 
     /**

@@ -1,6 +1,6 @@
 import { h } from 'preact';
 import { useEffect, useState, useMemo } from 'preact/hooks';
-import { Column as ColumnType, ProjectItem } from '../../api/types';
+import { Column as ColumnType, ProjectItem, ProjectSummary } from '../../api/types';
 import { ProjectState } from '../../state/project-state';
 import { Column } from './Column';
 import { EmptyState } from './EmptyState';
@@ -14,9 +14,12 @@ interface BoardProps {
     onCardMove: (cardId: string, toColumnId: string) => void;
     onCardClick: (card: ProjectItem) => void;
     cardSettings: CardDisplaySettings;
+    availableProjects?: ProjectSummary[];
+    currentProject?: { owner: string; number: number; ownerType: 'user' | 'organization' };
+    onProjectChange?: (project: ProjectSummary) => void;
 }
 
-export const Board = ({ state, onCardMove, onCardClick, cardSettings }: BoardProps) => {
+export const Board = ({ state, onCardMove, onCardClick, cardSettings, availableProjects, currentProject, onProjectChange }: BoardProps) => {
     const [columns, setColumns] = useState<ColumnType[]>([]);
     const [loading, setLoading] = useState(true);
     const [globalFilters, setGlobalFilters] = useState<GlobalFilterOptions>({
@@ -98,6 +101,9 @@ export const Board = ({ state, onCardMove, onCardClick, cardSettings }: BoardPro
                 availableRepositories={filterOptions.repositories}
                 totalCards={totalCards}
                 filteredCards={filteredCards}
+                availableProjects={availableProjects}
+                currentProject={currentProject}
+                onProjectChange={onProjectChange}
             />
             <div className="project-board">
                 {filteredColumns.map(column => (

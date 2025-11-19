@@ -126,3 +126,18 @@ export interface RateLimit {
     resetAt: string;
     cost: number;
 }
+
+export interface ProjectSummary {
+    id: string;
+    title: string;
+    url: string;
+    number: number;
+    owner: string;
+    ownerType: 'user' | 'organization';
+    closed: boolean;
+}
+
+export interface Organization {
+    login: string;
+    name?: string;
+}
