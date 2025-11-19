@@ -43,6 +43,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
     const [newLabelColor, setNewLabelColor] = useState('#0969da');
     const [isCreatingLabel, setIsCreatingLabel] = useState(false);
     const [labelSearchQuery, setLabelSearchQuery] = useState('');
+    const [isCreatingNewLabel, setIsCreatingNewLabel] = useState(false);
 
     // Assignees editing state
     const [isEditingAssignees, setIsEditingAssignees] = useState(false);
@@ -277,6 +278,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
 
             setNewLabelName('');
             setNewLabelColor('#0969da');
+            setIsCreatingNewLabel(false);
             success('Label created and added successfully');
         } catch (error) {
             console.error('Failed to create label:', error);
@@ -477,7 +479,8 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
                                     onChange={(e) => setEditedBody((e.target as HTMLTextAreaElement).value)}
                                     onBlur={handleSaveBody}
                                     onKeyDown={(e) => {
-                                        if (e.key === 'Enter' && e.ctrlKey) {
+                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                            e.preventDefault();
                                             handleSaveBody();
                                         } else if (e.key === 'Escape') {
                                             setEditedBody(card.body || '');
@@ -489,7 +492,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
                                     autoFocus
                                 />
                                 <div className="editable-field-hint">
-                                    {isSaving ? <LoadingSpinner size="small" /> : 'Ctrl+Enter or click outside to save, Esc to cancel'}
+                                    {isSaving ? <LoadingSpinner size="small" /> : 'Enter or click outside to save, Shift+Enter for new line, Esc to cancel'}
                                 </div>
                             </div>
                         ) : (
@@ -556,6 +559,21 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
                                         placeholder="Write a comment..."
                                         value={newComment}
                                         onChange={(e) => setNewComment((e.target as HTMLTextAreaElement).value)}
+                                        onBlur={() => {
+                                            if (newComment.trim()) {
+                                                handleAddComment();
+                                            }
+                                        }}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && !e.shiftKey) {
+                                                e.preventDefault();
+                                                if (newComment.trim()) {
+                                                    handleAddComment();
+                                                }
+                                            } else if (e.key === 'Escape') {
+                                                setNewComment('');
+                                            }
+                                        }}
                                         rows={3}
                                         disabled={isAddingComment}
                                     />
@@ -566,6 +584,9 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
                                     >
                                         {isAddingComment ? <LoadingSpinner size="small" /> : 'Add Comment'}
                                     </button>
+                                    <div className="editable-field-hint">
+                                        Enter or click outside to submit, Shift+Enter for new line, Esc to clear
+                                    </div>
                                 </div>
                             </div>
                             )}
@@ -628,6 +649,28 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
 
                         {isEditingLabels && (
                             <div className="label-selector">
+                                {/* Applied labels - shown first for better UX */}
+                                {editedLabels.length > 0 && (
+                                    <div className="label-list">
+                                        {editedLabels.map(label => (
+                                            <span
+                                                key={label.name}
+                                                className="label-badge"
+                                                style={{ backgroundColor: `#${label.color}` }}
+                                            >
+                                                {label.name}
+                                                <button
+                                                    className="label-remove"
+                                                    onClick={() => handleToggleLabel(label)}
+                                                    title="Remove label"
+                                                >
+                                                    ×
+                                                </button>
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+
                                 {/* Search available labels */}
                                 {availableLabels.length > 5 && (
                                     <input
@@ -639,7 +682,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
                                     />
                                 )}
 
-                                {/* Available labels - shown first */}
+                                {/* Available labels */}
                                 {isLoadingLabels ? (
                                     <div className="label-loading">
                                         <LoadingSpinner size="small" />
@@ -647,7 +690,6 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
                                     </div>
                                 ) : filteredAvailableLabels.length > 0 ? (
                                     <div className="available-labels">
-                                        <label className="label-section-title">Available Labels:</label>
                                         {filteredAvailableLabels.map(label => (
                                             <button
                                                 key={label.name}
@@ -660,84 +702,76 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
                                             </button>
                                         ))}
                                     </div>
-                                ) : availableLabels.length > 0 ? (
-                                    <div className="empty-field-small">All labels applied or filtered out</div>
+                                ) : availableLabels.length > 0 && !isCreatingNewLabel ? (
+                                    <div className="empty-field-small">All labels applied</div>
                                 ) : null}
 
-                                {/* Create new label - styled as a blank label */}
-                                <div className="create-label-section">
-                                    <label className="label-section-title">Create New Label:</label>
-                                    <div className="create-label-form-styled">
-                                        <div
-                                            className="label-badge-input"
-                                            style={{ backgroundColor: newLabelColor }}
-                                        >
-                                            <input
-                                                type="text"
-                                                className="label-name-input-styled"
-                                                placeholder="Label name..."
-                                                value={newLabelName}
-                                                onChange={(e) => setNewLabelName((e.target as HTMLInputElement).value)}
-                                                onKeyDown={(e) => {
-                                                    if (e.key === 'Enter' && newLabelName.trim()) {
-                                                        handleCreateLabel();
-                                                    }
-                                                }}
-                                                disabled={isCreatingLabel}
-                                                autoComplete="off"
-                                            />
-                                        </div>
-                                        <div className="label-color-picker-container">
-                                            <input
-                                                type="color"
-                                                className="label-color-picker"
-                                                value={newLabelColor}
-                                                onChange={(e) => setNewLabelColor((e.target as HTMLInputElement).value)}
-                                                title="Choose label color"
-                                            />
-                                            <div className="label-color-presets">
+                                {/* Create new label - collapsible */}
+                                {!isCreatingNewLabel ? (
+                                    <button
+                                        className="new-label-button"
+                                        onClick={() => setIsCreatingNewLabel(true)}
+                                    >
+                                        + New Label
+                                    </button>
+                                ) : (
+                                    <div className="create-label-section-compact">
+                                        <div className="create-label-form-compact">
+                                            <div
+                                                className="label-badge-input"
+                                                style={{ backgroundColor: newLabelColor }}
+                                            >
+                                                <input
+                                                    type="text"
+                                                    className="label-name-input-styled"
+                                                    placeholder="Label name..."
+                                                    value={newLabelName}
+                                                    onChange={(e) => setNewLabelName((e.target as HTMLInputElement).value)}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter' && newLabelName.trim()) {
+                                                            handleCreateLabel();
+                                                        } else if (e.key === 'Escape') {
+                                                            setNewLabelName('');
+                                                            setNewLabelColor('#0969da');
+                                                            setIsCreatingNewLabel(false);
+                                                        }
+                                                    }}
+                                                    disabled={isCreatingLabel}
+                                                    autoComplete="off"
+                                                    autoFocus
+                                                />
+                                            </div>
+                                            <div className="label-color-presets-compact">
                                                 {labelColors.map(color => (
                                                     <button
                                                         key={color}
-                                                        className="label-color-preset"
+                                                        className={`label-color-preset ${newLabelColor === color ? 'selected' : ''}`}
                                                         style={{ backgroundColor: color }}
                                                         onClick={() => setNewLabelColor(color)}
                                                         title={color}
                                                     />
                                                 ))}
                                             </div>
-                                        </div>
-                                        <button
-                                            className="create-label-button-styled"
-                                            onClick={handleCreateLabel}
-                                            disabled={isCreatingLabel || !newLabelName.trim()}
-                                        >
-                                            {isCreatingLabel ? <LoadingSpinner size="small" /> : '+ Create & Add'}
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* Applied labels - shown last */}
-                                {editedLabels.length > 0 && (
-                                    <div className="applied-labels-section">
-                                        <label className="label-section-title">Applied Labels:</label>
-                                        <div className="label-list">
-                                            {editedLabels.map(label => (
-                                                <span
-                                                    key={label.name}
-                                                    className="label-badge"
-                                                    style={{ backgroundColor: `#${label.color}` }}
+                                            <div className="create-label-actions">
+                                                <button
+                                                    className="create-label-button-compact"
+                                                    onClick={handleCreateLabel}
+                                                    disabled={isCreatingLabel || !newLabelName.trim()}
                                                 >
-                                                    {label.name}
-                                                    <button
-                                                        className="label-remove"
-                                                        onClick={() => handleToggleLabel(label)}
-                                                        title="Remove label"
-                                                    >
-                                                        ×
-                                                    </button>
-                                                </span>
-                                            ))}
+                                                    {isCreatingLabel ? <LoadingSpinner size="small" /> : 'Create'}
+                                                </button>
+                                                <button
+                                                    className="cancel-label-button"
+                                                    onClick={() => {
+                                                        setNewLabelName('');
+                                                        setNewLabelColor('#0969da');
+                                                        setIsCreatingNewLabel(false);
+                                                    }}
+                                                    disabled={isCreatingLabel}
+                                                >
+                                                    Cancel
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 )}
