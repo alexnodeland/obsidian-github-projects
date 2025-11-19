@@ -69,7 +69,7 @@ npm run build
 3. **Link to your vault**:
 
 ```bash
-./setup-dev.sh /path/to/your/vault
+./scripts/setup-dev.sh /path/to/your/vault
 ```
 
 Or manually copy files:
@@ -96,7 +96,7 @@ Use the watch mode for continuous development:
 make dev VAULT=/path/to/your/vault
 
 # Or using the script directly
-./dev-watch.sh /path/to/your/vault
+./scripts/dev-watch.sh /path/to/your/vault
 ```
 
 This will:
