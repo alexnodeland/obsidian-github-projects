@@ -123,8 +123,21 @@ export const GlobalFilters = ({
         ? `${currentProject.ownerType}-${currentProject.owner}-${currentProject.number}`
         : '';
 
-    // Filter out closed projects by default
+    // Filter out closed projects by default, but include current project even if closed
+    const currentProjectInList = availableProjects.find(p => {
+        const key = `${p.ownerType}-${p.owner}-${p.number}`;
+        return key === currentProjectKey;
+    });
+    
     const openProjects = availableProjects.filter(p => !p.closed);
+    
+    // If current project is closed and not in the list, add it
+    const projectsForDropdown = currentProjectInList?.closed && !openProjects.some(p => {
+        const key = `${p.ownerType}-${p.owner}-${p.number}`;
+        return key === currentProjectKey;
+    })
+        ? [currentProjectInList, ...openProjects]
+        : openProjects;
 
     return (
         <div className="global-filters">
@@ -144,10 +157,12 @@ export const GlobalFilters = ({
                             onChange={handleProjectChange}
                             title="Switch project"
                         >
-                            {openProjects.length === 0 && (
-                                <option value="" disabled>No projects available</option>
+                            {projectsForDropdown.length === 0 && (
+                                <option value={currentProjectKey || ""} disabled>
+                                    {currentProjectKey ? "Current project is closed" : "No projects available"}
+                                </option>
                             )}
-                            {openProjects.map(project => {
+                            {projectsForDropdown.map(project => {
                                 const key = `${project.ownerType}-${project.owner}-${project.number}`;
                                 const label = project.ownerType === 'user'
                                     ? `${project.title}`

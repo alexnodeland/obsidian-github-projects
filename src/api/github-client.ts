@@ -438,17 +438,17 @@ export class GitHubClient {
         const userProjects = await this.fetchUserProjects();
         allProjects.push(...userProjects);
 
-        // Fetch organizations and their projects
+        // Fetch organizations and their projects in parallel
         const organizations = await this.fetchUserOrganizations();
-        for (const org of organizations) {
-            try {
-                const orgProjects = await this.fetchOrganizationProjects(org.login);
-                allProjects.push(...orgProjects);
-            } catch (error) {
-                console.error(`Failed to fetch projects for org ${org.login}:`, error);
-                // Continue with other organizations
-            }
-        }
+        const orgProjectPromises = organizations.map(org =>
+            this.fetchOrganizationProjects(org.login)
+                .catch(error => {
+                    console.error(`Failed to fetch projects for org ${org.login}:`, error);
+                    return []; // Return empty array on error
+                })
+        );
+        const orgProjectArrays = await Promise.all(orgProjectPromises);
+        orgProjectArrays.forEach(projects => allProjects.push(...projects));
 
         // Sort by owner type (user first), then by title
         allProjects.sort((a, b) => {

@@ -106,10 +106,12 @@ export class ProjectBoardView extends ItemView {
         }
 
         try {
-            // Fetch all accessible projects in background (for project switcher)
-            this.plugin.fetchAllProjects().catch(err => {
+            // Fetch all accessible projects before loading project data (for project switcher)
+            try {
+                await this.plugin.fetchAllProjects();
+            } catch (err) {
                 console.warn('Failed to fetch project list:', err);
-            });
+            }
 
             // Load project data
             await this.plugin.loadProjectData();
