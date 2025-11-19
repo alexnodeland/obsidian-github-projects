@@ -283,5 +283,64 @@ export const QUERIES = {
                 cost
             }
         }
+    `,
+
+    GET_USER_PROJECTS: `
+        query($cursor: String) {
+            viewer {
+                login
+                projectsV2(first: 100, after: $cursor) {
+                    nodes {
+                        id
+                        title
+                        url
+                        number
+                        closed
+                    }
+                    pageInfo {
+                        hasNextPage
+                        endCursor
+                    }
+                }
+            }
+        }
+    `,
+
+    GET_ORGANIZATION_PROJECTS: `
+        query($org: String!, $cursor: String) {
+            organization(login: $org) {
+                login
+                projectsV2(first: 100, after: $cursor) {
+                    nodes {
+                        id
+                        title
+                        url
+                        number
+                        closed
+                    }
+                    pageInfo {
+                        hasNextPage
+                        endCursor
+                    }
+                }
+            }
+        }
+    `,
+
+    GET_VIEWER_ORGANIZATIONS: `
+        query($cursor: String) {
+            viewer {
+                organizations(first: 100, after: $cursor) {
+                    nodes {
+                        login
+                        name
+                    }
+                    pageInfo {
+                        hasNextPage
+                        endCursor
+                    }
+                }
+            }
+        }
     `
 };

@@ -2251,6 +2251,32 @@
   flex-wrap: wrap;
 }
 
+.project-switcher-dropdown {
+  padding: 8px 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  max-width: 250px;
+  min-width: 150px;
+}
+
+.project-switcher-dropdown:hover {
+  border-color: var(--interactive-accent);
+  background-color: var(--background-modifier-hover);
+}
+
+.project-switcher-dropdown:focus {
+  outline: none;
+  border-color: var(--interactive-accent);
+  box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.1);
+}
+
 .filtered-count {
   font-size: 13px;
   color: var(--text-muted);

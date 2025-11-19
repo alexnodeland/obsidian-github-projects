@@ -5,6 +5,7 @@ import { SyncManager } from './state/sync';
 import { APICache } from './state/cache';
 import { TokenManager } from './utils/auth';
 import { displayError } from './utils/error-handling';
+import { ProjectSummary } from './api/types';
 import {
     GitHubProjectsSettings,
     GitHubProjectsSettingTab,
@@ -22,6 +23,7 @@ export default class GitHubProjectsPlugin extends Plugin {
     syncManager: SyncManager | null = null;
     private cache: APICache;
     private githubClient: GitHubClient | null = null;
+    public availableProjects: ProjectSummary[] = [];
 
     async onload() {
         console.log('Loading GitHub Projects plugin');
@@ -115,6 +117,29 @@ export default class GitHubProjectsPlugin extends Plugin {
     }
 
     /**
+     * Fetch all accessible projects (user + organizations)
+     */
+    async fetchAllProjects(): Promise<void> {
+        const client = this.getGitHubClient();
+        if (!client) {
+            console.warn('No GitHub client available for fetching projects');
+            return;
+        }
+
+        try {
+            const cacheKey = 'all-accessible-projects';
+            this.availableProjects = await this.cache.fetchWithCache(
+                cacheKey,
+                () => client.fetchAllAccessibleProjects()
+            );
+            console.log(`Fetched ${this.availableProjects.length} accessible projects`);
+        } catch (error) {
+            console.error('Failed to fetch accessible projects:', error);
+            // Don't throw - project switcher is optional
+        }
+    }
+
+    /**
      * Load project data from GitHub
      */
     async loadProjectData(): Promise<void> {
@@ -196,6 +221,31 @@ export default class GitHubProjectsPlugin extends Plugin {
         if (leaf) {
             workspace.revealLeaf(leaf);
         }
+    }
+
+    /**
+     * Switch to a different project
+     */
+    async switchProject(project: ProjectSummary): Promise<void> {
+        // Update settings
+        this.settings.owner = project.owner;
+        this.settings.projectNumber = project.number;
+        this.settings.ownerType = project.ownerType;
+        await this.saveSettings();
+
+        // Clear cache for old project
+        this.cache.invalidate();
+
+        // Stop old sync manager
+        if (this.syncManager) {
+            this.syncManager.destroy();
+            this.syncManager = null;
+        }
+
+        // Refresh all views to load new project
+        this.refreshViews();
+
+        new Notice(`Switched to project: ${project.title}`);
     }
 
     /**

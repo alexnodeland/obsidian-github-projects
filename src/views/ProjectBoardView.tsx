@@ -5,7 +5,7 @@ import GitHubProjectsPlugin from '../main';
 import { Board } from './components/Board';
 import { EmptyState } from './components/EmptyState';
 import { CardDetailModal } from './modals/CardDetailModal';
-import { ProjectItem } from '../api/types';
+import { ProjectItem, ProjectSummary } from '../api/types';
 import { displayError } from '../utils/error-handling';
 import { ToastContainer, useToasts } from './components/Toast';
 
@@ -106,6 +106,11 @@ export class ProjectBoardView extends ItemView {
         }
 
         try {
+            // Fetch all accessible projects in background (for project switcher)
+            this.plugin.fetchAllProjects().catch(err => {
+                console.warn('Failed to fetch project list:', err);
+            });
+
             // Load project data
             await this.plugin.loadProjectData();
 
@@ -119,6 +124,13 @@ export class ProjectBoardView extends ItemView {
                             onCardMove={this.handleCardMove.bind(this)}
                             onCardClick={this.handleCardClick.bind(this)}
                             cardSettings={this.plugin.settings.cardDisplay}
+                            availableProjects={this.plugin.availableProjects}
+                            currentProject={{
+                                owner: this.plugin.settings.owner,
+                                number: this.plugin.settings.projectNumber,
+                                ownerType: this.plugin.settings.ownerType
+                            }}
+                            onProjectChange={this.handleProjectChange.bind(this)}
                         />
                         <ToastContainer toasts={toasts} onClose={close} />
                     </div>
@@ -187,6 +199,17 @@ export class ProjectBoardView extends ItemView {
             },
             this.plugin.settings.modalDisplay
         ).open();
+    }
+
+    /**
+     * Handle project change from dropdown
+     */
+    private async handleProjectChange(project: ProjectSummary) {
+        try {
+            await this.plugin.switchProject(project);
+        } catch (error) {
+            displayError(error as Error);
+        }
     }
 
     /**
