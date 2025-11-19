@@ -36,7 +36,6 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
     const [isLoadingComments, setIsLoadingComments] = useState(false);
     const [isAddingComment, setIsAddingComment] = useState(false);
     const [isCommentsExpanded, setIsCommentsExpanded] = useState(false);
-    const [isCommentFocused, setIsCommentFocused] = useState(false);
 
     // Labels editing state
     const [isEditingLabels, setIsEditingLabels] = useState(false);
@@ -616,8 +615,6 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
                                             const value = (e.target as HTMLTextAreaElement).value;
                                             setNewComment(value);
                                         }}
-                                        onFocus={() => setIsCommentFocused(true)}
-                                        onBlur={() => setIsCommentFocused(false)}
                                         rows={3}
                                         disabled={isAddingComment}
                                     />
