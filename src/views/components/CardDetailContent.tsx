@@ -1,5 +1,5 @@
 import { h, Fragment } from 'preact';
-import { useState, useEffect, useRef } from 'preact/hooks';
+import { useState, useEffect, useRef, useCallback } from 'preact/hooks';
 import { ProjectItem, Label, Assignee, Comment } from '../../api/types';
 import { GitHubClient } from '../../api/github-client';
 import { ResizeHandle } from './ResizeHandle';
@@ -55,14 +55,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
     // Refs for resize containers
     const mainContainerRef = useRef<HTMLDivElement>(null);
 
-    // Load comments when modal opens (only if comments section is enabled)
-    useEffect(() => {
-        if (settings.showComments && card.repository && card.number && card.type !== 'DraftIssue') {
-            loadComments();
-        }
-    }, [settings.showComments]);
-
-    const loadComments = async () => {
+    const loadComments = useCallback(async () => {
         if (!card.repository || !card.number || card.type === 'DraftIssue') return;
 
         setIsLoadingComments(true);
@@ -79,7 +72,14 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
         } finally {
             setIsLoadingComments(false);
         }
-    };
+    }, [card.repository, card.number, card.type, githubClient]);
+
+    // Load comments when modal opens (only if comments section is enabled)
+    useEffect(() => {
+        if (settings.showComments && card.repository && card.number && card.type !== 'DraftIssue') {
+            loadComments();
+        }
+    }, [settings.showComments, card.repository, card.number, card.type, loadComments]);
 
     const handleSaveTitle = async () => {
         console.log('[CardDetail] handleSaveTitle called', {
