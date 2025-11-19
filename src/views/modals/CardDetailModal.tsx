@@ -3,6 +3,7 @@ import { render, h } from 'preact';
 import { ProjectItem } from '../../api/types';
 import { GitHubClient } from '../../api/github-client';
 import { CardDetailContent } from '../components/CardDetailContent';
+import { ModalDisplaySettings, DEFAULT_MODAL_DISPLAY } from '../../settings';
 
 /**
  * Modal for viewing and editing card details
@@ -11,12 +12,14 @@ export class CardDetailModal extends Modal {
     private card: ProjectItem;
     private githubClient: GitHubClient;
     private onCardUpdate?: (updatedCard: Partial<ProjectItem>) => void;
+    private modalSettings: ModalDisplaySettings;
 
-    constructor(app: App, card: ProjectItem, githubClient: GitHubClient, onCardUpdate?: (updatedCard: Partial<ProjectItem>) => void) {
+    constructor(app: App, card: ProjectItem, githubClient: GitHubClient, onCardUpdate?: (updatedCard: Partial<ProjectItem>) => void, modalSettings?: ModalDisplaySettings) {
         super(app);
         this.card = card;
         this.githubClient = githubClient;
         this.onCardUpdate = onCardUpdate;
+        this.modalSettings = modalSettings || DEFAULT_MODAL_DISPLAY;
     }
 
     onOpen() {
@@ -47,7 +50,8 @@ export class CardDetailModal extends Modal {
                         this.onCardUpdate(updatedCard);
                     }
                 },
-                onClose: () => this.close()
+                onClose: () => this.close(),
+                settings: this.modalSettings
             }),
             contentEl
         );

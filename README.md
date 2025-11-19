@@ -14,6 +14,7 @@ Manage GitHub Projects V2 with Kanban boards directly in Obsidian.
 
 - 📋 **Kanban Board View** - Visualize your GitHub Projects V2 as interactive Kanban boards
 - 🔄 **Drag & Drop** - Move items between columns with smooth drag-and-drop interactions
+- 🎛️ **Extensive Customization** - Configure which fields appear on cards and in detail modals
 - 🔐 **Secure Authentication** - Personal Access Token stored in localStorage (not synced with vault)
 - ⚡ **Real-time Sync** - Auto-refresh project data from GitHub at configurable intervals
 - 🎨 **Theme Compatible** - Seamlessly integrates with Obsidian themes (light & dark mode)
@@ -68,6 +69,24 @@ Manage GitHub Projects V2 with Kanban boards directly in Obsidian.
 
 - Click the dashboard icon (📋) in the ribbon, or
 - Use command palette: **"GitHub Projects: Open Project Board"**
+
+### 4. Customize Your View (Optional)
+
+You can now customize what information appears on cards and in detail modals:
+
+1. Go to **Obsidian Settings → GitHub Projects**
+2. Scroll to **Card Display Settings** to configure:
+   - Card title length
+   - Show/hide repository, labels, description, milestone, etc.
+   - Maximum number of labels and assignees to display
+   - Description truncation length
+   - Engagement metrics (comments, reactions)
+3. Scroll to **Detail Modal Settings** to configure:
+   - Show/hide status badges, repository, labels, assignees
+   - Show/hide author, reviewers, milestone, PR changes
+   - Show/hide engagement metrics, timeline, comments
+
+All settings are saved and applied immediately to give you complete control over your workflow.
 
 ## 📖 Documentation
 

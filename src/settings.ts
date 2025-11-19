@@ -1,18 +1,88 @@
 import { App, PluginSettingTab, Setting, Notice } from 'obsidian';
 import GitHubProjectsPlugin from './main';
 
+export interface CardDisplaySettings {
+    // What to show on Kanban cards
+    titleLength: number;
+    showRepository: boolean;
+    showLabels: boolean;
+    maxLabels: number;
+    showDescription: boolean;
+    descriptionLength: number;
+    showMilestone: boolean;
+    showPRChanges: boolean;
+    showAuthor: boolean;
+    showAssignees: boolean;
+    maxAssignees: number;
+    showCommentCount: boolean;
+    showReactionCount: boolean;
+    showUpdatedTime: boolean;
+    showState: boolean;
+}
+
+export interface ModalDisplaySettings {
+    // What sections to show in detail modal
+    showStatusBadges: boolean;
+    showRepository: boolean;
+    showLabels: boolean;
+    showAssignees: boolean;
+    showAuthor: boolean;
+    showReviewers: boolean;
+    showMilestone: boolean;
+    showPRChanges: boolean;
+    showEngagement: boolean;
+    showTimeline: boolean;
+    showComments: boolean;
+}
+
 export interface GitHubProjectsSettings {
     ownerType: 'user' | 'organization';
     owner: string; // username or organization name
     projectNumber: number;
     refreshInterval: number; // seconds, 0 for manual only
+    cardDisplay: CardDisplaySettings;
+    modalDisplay: ModalDisplaySettings;
 }
+
+export const DEFAULT_CARD_DISPLAY: CardDisplaySettings = {
+    titleLength: 80,
+    showRepository: true,
+    showLabels: true,
+    maxLabels: 3,
+    showDescription: true,
+    descriptionLength: 100,
+    showMilestone: true,
+    showPRChanges: true,
+    showAuthor: true,
+    showAssignees: true,
+    maxAssignees: 2,
+    showCommentCount: true,
+    showReactionCount: true,
+    showUpdatedTime: true,
+    showState: true,
+};
+
+export const DEFAULT_MODAL_DISPLAY: ModalDisplaySettings = {
+    showStatusBadges: true,
+    showRepository: true,
+    showLabels: true,
+    showAssignees: true,
+    showAuthor: true,
+    showReviewers: true,
+    showMilestone: true,
+    showPRChanges: true,
+    showEngagement: true,
+    showTimeline: true,
+    showComments: true,
+};
 
 export const DEFAULT_SETTINGS: GitHubProjectsSettings = {
     ownerType: 'user',
     owner: '',
     projectNumber: 1,
-    refreshInterval: 300 // 5 minutes
+    refreshInterval: 300, // 5 minutes
+    cardDisplay: DEFAULT_CARD_DISPLAY,
+    modalDisplay: DEFAULT_MODAL_DISPLAY,
 };
 
 export class GitHubProjectsSettingTab extends PluginSettingTab {
@@ -182,6 +252,317 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
                     if (this.plugin.syncManager) {
                         this.plugin.syncManager.startAutoSync(this.plugin.settings.refreshInterval);
                     }
+                }));
+
+        // Card Display Settings
+        containerEl.createEl('h3', { text: 'Card Display Settings' });
+        containerEl.createEl('p', {
+            text: 'Customize what information appears on cards in the Kanban board',
+            cls: 'setting-item-description'
+        });
+
+        new Setting(containerEl)
+            .setName('Card Title Length')
+            .setDesc('Maximum characters to show in card titles')
+            .addText(text => text
+                .setPlaceholder('80')
+                .setValue(String(this.plugin.settings.cardDisplay.titleLength))
+                .onChange(async (value) => {
+                    const num = parseInt(value);
+                    if (!isNaN(num) && num > 0 && num <= 500) {
+                        this.plugin.settings.cardDisplay.titleLength = num;
+                        await this.plugin.saveSettings();
+                        this.plugin.refreshViews();
+                    }
+                }));
+
+        new Setting(containerEl)
+            .setName('Show Repository')
+            .setDesc('Display repository name on cards')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.cardDisplay.showRepository)
+                .onChange(async (value) => {
+                    this.plugin.settings.cardDisplay.showRepository = value;
+                    await this.plugin.saveSettings();
+                    this.plugin.refreshViews();
+                }));
+
+        new Setting(containerEl)
+            .setName('Show Labels')
+            .setDesc('Display labels on cards')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.cardDisplay.showLabels)
+                .onChange(async (value) => {
+                    this.plugin.settings.cardDisplay.showLabels = value;
+                    await this.plugin.saveSettings();
+                    this.plugin.refreshViews();
+                }));
+
+        if (this.plugin.settings.cardDisplay.showLabels) {
+            new Setting(containerEl)
+                .setName('Maximum Labels')
+                .setDesc('Maximum number of labels to show on cards (rest will show as +N)')
+                .addText(text => text
+                    .setPlaceholder('3')
+                    .setValue(String(this.plugin.settings.cardDisplay.maxLabels))
+                    .onChange(async (value) => {
+                        const num = parseInt(value);
+                        if (!isNaN(num) && num > 0 && num <= 20) {
+                            this.plugin.settings.cardDisplay.maxLabels = num;
+                            await this.plugin.saveSettings();
+                            this.plugin.refreshViews();
+                        }
+                    }));
+        }
+
+        new Setting(containerEl)
+            .setName('Show Description')
+            .setDesc('Display issue/PR description on cards')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.cardDisplay.showDescription)
+                .onChange(async (value) => {
+                    this.plugin.settings.cardDisplay.showDescription = value;
+                    await this.plugin.saveSettings();
+                    this.plugin.refreshViews();
+                }));
+
+        if (this.plugin.settings.cardDisplay.showDescription) {
+            new Setting(containerEl)
+                .setName('Description Length')
+                .setDesc('Maximum characters to show in card descriptions')
+                .addText(text => text
+                    .setPlaceholder('100')
+                    .setValue(String(this.plugin.settings.cardDisplay.descriptionLength))
+                    .onChange(async (value) => {
+                        const num = parseInt(value);
+                        if (!isNaN(num) && num > 0 && num <= 500) {
+                            this.plugin.settings.cardDisplay.descriptionLength = num;
+                            await this.plugin.saveSettings();
+                            this.plugin.refreshViews();
+                        }
+                    }));
+        }
+
+        new Setting(containerEl)
+            .setName('Show Milestone')
+            .setDesc('Display milestone information on cards')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.cardDisplay.showMilestone)
+                .onChange(async (value) => {
+                    this.plugin.settings.cardDisplay.showMilestone = value;
+                    await this.plugin.saveSettings();
+                    this.plugin.refreshViews();
+                }));
+
+        new Setting(containerEl)
+            .setName('Show PR Changes')
+            .setDesc('Display additions/deletions count on PR cards')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.cardDisplay.showPRChanges)
+                .onChange(async (value) => {
+                    this.plugin.settings.cardDisplay.showPRChanges = value;
+                    await this.plugin.saveSettings();
+                    this.plugin.refreshViews();
+                }));
+
+        new Setting(containerEl)
+            .setName('Show Author')
+            .setDesc('Display author avatar on cards')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.cardDisplay.showAuthor)
+                .onChange(async (value) => {
+                    this.plugin.settings.cardDisplay.showAuthor = value;
+                    await this.plugin.saveSettings();
+                    this.plugin.refreshViews();
+                }));
+
+        new Setting(containerEl)
+            .setName('Show Assignees')
+            .setDesc('Display assignee avatars on cards')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.cardDisplay.showAssignees)
+                .onChange(async (value) => {
+                    this.plugin.settings.cardDisplay.showAssignees = value;
+                    await this.plugin.saveSettings();
+                    this.plugin.refreshViews();
+                }));
+
+        if (this.plugin.settings.cardDisplay.showAssignees) {
+            new Setting(containerEl)
+                .setName('Maximum Assignees')
+                .setDesc('Maximum number of assignees to show on cards (rest will show as +N)')
+                .addText(text => text
+                    .setPlaceholder('2')
+                    .setValue(String(this.plugin.settings.cardDisplay.maxAssignees))
+                    .onChange(async (value) => {
+                        const num = parseInt(value);
+                        if (!isNaN(num) && num > 0 && num <= 20) {
+                            this.plugin.settings.cardDisplay.maxAssignees = num;
+                            await this.plugin.saveSettings();
+                            this.plugin.refreshViews();
+                        }
+                    }));
+        }
+
+        new Setting(containerEl)
+            .setName('Show Comment Count')
+            .setDesc('Display number of comments on cards')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.cardDisplay.showCommentCount)
+                .onChange(async (value) => {
+                    this.plugin.settings.cardDisplay.showCommentCount = value;
+                    await this.plugin.saveSettings();
+                    this.plugin.refreshViews();
+                }));
+
+        new Setting(containerEl)
+            .setName('Show Reaction Count')
+            .setDesc('Display number of reactions on cards')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.cardDisplay.showReactionCount)
+                .onChange(async (value) => {
+                    this.plugin.settings.cardDisplay.showReactionCount = value;
+                    await this.plugin.saveSettings();
+                    this.plugin.refreshViews();
+                }));
+
+        new Setting(containerEl)
+            .setName('Show Updated Time')
+            .setDesc('Display last updated time on cards')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.cardDisplay.showUpdatedTime)
+                .onChange(async (value) => {
+                    this.plugin.settings.cardDisplay.showUpdatedTime = value;
+                    await this.plugin.saveSettings();
+                    this.plugin.refreshViews();
+                }));
+
+        new Setting(containerEl)
+            .setName('Show State')
+            .setDesc('Display state badge (OPEN/CLOSED) on cards')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.cardDisplay.showState)
+                .onChange(async (value) => {
+                    this.plugin.settings.cardDisplay.showState = value;
+                    await this.plugin.saveSettings();
+                    this.plugin.refreshViews();
+                }));
+
+        // Modal Display Settings
+        containerEl.createEl('h3', { text: 'Detail Modal Settings' });
+        containerEl.createEl('p', {
+            text: 'Customize what sections appear in the card detail modal',
+            cls: 'setting-item-description'
+        });
+
+        new Setting(containerEl)
+            .setName('Show Status Badges')
+            .setDesc('Display status, review decision, and CI badges')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.modalDisplay.showStatusBadges)
+                .onChange(async (value) => {
+                    this.plugin.settings.modalDisplay.showStatusBadges = value;
+                    await this.plugin.saveSettings();
+                }));
+
+        new Setting(containerEl)
+            .setName('Show Repository')
+            .setDesc('Display repository section in modal')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.modalDisplay.showRepository)
+                .onChange(async (value) => {
+                    this.plugin.settings.modalDisplay.showRepository = value;
+                    await this.plugin.saveSettings();
+                }));
+
+        new Setting(containerEl)
+            .setName('Show Labels')
+            .setDesc('Display labels section in modal (editable)')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.modalDisplay.showLabels)
+                .onChange(async (value) => {
+                    this.plugin.settings.modalDisplay.showLabels = value;
+                    await this.plugin.saveSettings();
+                }));
+
+        new Setting(containerEl)
+            .setName('Show Assignees')
+            .setDesc('Display assignees section in modal (editable)')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.modalDisplay.showAssignees)
+                .onChange(async (value) => {
+                    this.plugin.settings.modalDisplay.showAssignees = value;
+                    await this.plugin.saveSettings();
+                }));
+
+        new Setting(containerEl)
+            .setName('Show Author')
+            .setDesc('Display author section in modal')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.modalDisplay.showAuthor)
+                .onChange(async (value) => {
+                    this.plugin.settings.modalDisplay.showAuthor = value;
+                    await this.plugin.saveSettings();
+                }));
+
+        new Setting(containerEl)
+            .setName('Show Reviewers')
+            .setDesc('Display reviewers section for PRs in modal')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.modalDisplay.showReviewers)
+                .onChange(async (value) => {
+                    this.plugin.settings.modalDisplay.showReviewers = value;
+                    await this.plugin.saveSettings();
+                }));
+
+        new Setting(containerEl)
+            .setName('Show Milestone')
+            .setDesc('Display milestone section in modal')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.modalDisplay.showMilestone)
+                .onChange(async (value) => {
+                    this.plugin.settings.modalDisplay.showMilestone = value;
+                    await this.plugin.saveSettings();
+                }));
+
+        new Setting(containerEl)
+            .setName('Show PR Changes')
+            .setDesc('Display PR additions/deletions section in modal')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.modalDisplay.showPRChanges)
+                .onChange(async (value) => {
+                    this.plugin.settings.modalDisplay.showPRChanges = value;
+                    await this.plugin.saveSettings();
+                }));
+
+        new Setting(containerEl)
+            .setName('Show Engagement')
+            .setDesc('Display comment and reaction counts in modal')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.modalDisplay.showEngagement)
+                .onChange(async (value) => {
+                    this.plugin.settings.modalDisplay.showEngagement = value;
+                    await this.plugin.saveSettings();
+                }));
+
+        new Setting(containerEl)
+            .setName('Show Timeline')
+            .setDesc('Display created/updated/closed/merged dates in modal')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.modalDisplay.showTimeline)
+                .onChange(async (value) => {
+                    this.plugin.settings.modalDisplay.showTimeline = value;
+                    await this.plugin.saveSettings();
+                }));
+
+        new Setting(containerEl)
+            .setName('Show Comments')
+            .setDesc('Display comments section in modal')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.modalDisplay.showComments)
+                .onChange(async (value) => {
+                    this.plugin.settings.modalDisplay.showComments = value;
+                    await this.plugin.saveSettings();
                 }));
 
         // Manual actions
