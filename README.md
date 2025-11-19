@@ -1,6 +1,6 @@
 # GitHub Projects for Obsidian
 
-[![CI](https://github.com/alexnodeland/obsidian-github-projects/workflows/CI/badge.svg)](https://github.com/alexnodeland/obsidian-github-projects/actions/workflows/ci.yml)
+[![CI](https://github.com/alexnodeland/obsidian-github-projects/actions/workflows/ci.yml/badge.svg)](https://github.com/alexnodeland/obsidian-github-projects/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/alexnodeland/obsidian-github-projects/branch/main/graph/badge.svg)](https://codecov.io/gh/alexnodeland/obsidian-github-projects)
 [![Release](https://img.shields.io/github/v/release/alexnodeland/obsidian-github-projects)](https://github.com/alexnodeland/obsidian-github-projects/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
