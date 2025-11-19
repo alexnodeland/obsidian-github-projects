@@ -22,9 +22,6 @@ Manage GitHub Projects V2 with Kanban boards directly in Obsidian.
 - 🔍 **Powerful Filtering** - Filter by assignee, state, type, or search across titles and descriptions
 - 💬 **Card Details** - Click any card to view full details, comments, and metadata
 
-## 📸 Screenshots
-
-<!-- TODO: Add screenshots -->
 
 ## 📦 Installation
 
@@ -49,21 +46,30 @@ Manage GitHub Projects V2 with Kanban boards directly in Obsidian.
 **For Fine-Grained Tokens (Recommended)**:
 1. Go to [GitHub Settings → Personal access tokens → Fine-grained tokens](https://github.com/settings/tokens?type=beta)
 2. Click **"Generate new token"**
-3. Grant **"Projects: Read and Write"** permission
+3. Configure permissions:
+   - **Projects**: Read and Write (required)
+   - **Metadata**: Read (required for organization access)
+   - **Contents**: Read (required for private repositories)
 4. Copy the token (starts with `github_pat_`)
 
 **For Classic Tokens**:
 1. Go to [GitHub Settings → Personal access tokens](https://github.com/settings/tokens)
 2. Click **"Generate new token (classic)"**
-3. Select the **`project`** scope
+3. Select the following scopes:
+   - **`project`** - Required for project access
+   - **`read:org`** - Required for organization dropdown/selector
+   - **`repo`** - Required for private repositories
 4. Copy the token (starts with `ghp_`)
 
 ### 2. Configure the Plugin
 
 1. Open **Obsidian Settings → GitHub Projects**
 2. Paste your token
-3. Enter your **organization name** (e.g., `my-org`)
-4. Enter your **project number** (from URL: `github.com/orgs/my-org/projects/5` → `5`)
+3. (Optional) Set a default project:
+   - Choose **Personal Account** or **Organization**
+   - For organizations, enter the org name (e.g., `my-org`)
+   - Enter the project number (from URL: `github.com/orgs/my-org/projects/5` → `5`)
+   - Leave empty to use the project selector dropdown
 
 ### 3. Open Your Board
 
@@ -130,7 +136,7 @@ make dev VAULT=/path/to/your/vault
 make dev VAULT=/path/to/vault   # Start development mode
 make build                       # Production build
 make test                        # Run tests
-make test:coverage               # Run tests with coverage
+make coverage                    # Run tests with coverage
 
 # Quality Checks
 make lint                        # Run linter
@@ -210,10 +216,10 @@ See the [User Guide](docs/user-guide.md#token-security-concerns) for more detail
 ## ❓ FAQ
 
 **Q: Can I use multiple projects?**
-A: Currently, one project at a time. Switch projects by changing settings.
+A: Yes! Use the project selector dropdown to switch between projects, or set a default in settings.
 
 **Q: Does this work with personal projects?**
-A: Yes! Use your GitHub username as the organization name.
+A: Yes! Select any personal project in the project selector dropdown, or set your default to "Personal".
 
 **Q: Can I create new issues from Obsidian?**
 A: Not yet. This feature is planned for a future release.

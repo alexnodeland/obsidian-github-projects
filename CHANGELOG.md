@@ -7,38 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-alpha] - 2025-11-19
+
 ### Added
-- **Extensive customization options** for card and modal displays
+- **Initial alpha release** with full feature set
+- **Kanban Board View** - Interactive GitHub Projects V2 visualization
+- **Drag and Drop** - Move items between columns with smooth interactions
+- **GitHub Authentication** - Secure Personal Access Token support (Classic and Fine-grained)
+- **Auto-refresh** - Configurable sync intervals (default: 5 minutes)
+- **Comprehensive Customization** - Extensive settings for card and modal displays:
   - Configure card title length and description truncation
   - Show/hide repository, labels, description, milestone on cards
   - Control maximum number of labels and assignees displayed
-  - Show/hide PR changes, author, assignees, comments, reactions
-  - Configure detail modal sections visibility (status badges, repository, labels, assignees, author, reviewers, milestone, PR changes, engagement, timeline, comments)
+  - Configure detail modal sections visibility
   - All settings applied immediately with real-time preview
-  - Backwards compatible with existing settings
-
-## [0.1.0] - 2025-01-XX
-
-### Added
-- Initial release
-- Kanban board view for GitHub Projects V2
-- Drag and drop functionality for moving items between columns
-- GitHub Personal Access Token authentication
-- Auto-refresh with configurable intervals
-- Card detail modal with full item information
-- Filtering by assignee, state, and type
-- Search functionality across titles and descriptions
-- Mobile support for iOS and Android
-- Theme compatibility with Obsidian themes
-- Settings tab for configuration
-- Comprehensive documentation structure
-- GitHub Actions CI/CD workflows
-- Code coverage reporting
-- Makefile for improved developer experience
-- Polish UI with comprehensive improvements
-- Collapsible comments panel for better UX
-- Authors and milestone to global filter options
-- Improved scrolling UX by removing nested scrollable elements
+- **Project Selector** - Easy switching between multiple projects
+- **Advanced Filtering** - Filter by assignee, state, type, author, milestone
+- **Search** - Full-text search across titles and descriptions
+- **Card Details** - Rich detail modal with comments, timeline, and metadata
+- **Mobile Support** - Full functionality on iOS and Android
+- **Theme Compatibility** - Seamless integration with Obsidian themes
+- **Developer Experience**:
+  - Comprehensive documentation (User Guide, Developer Guide, Architecture, API Reference)
+  - GitHub Actions CI/CD with automated testing
+  - Code coverage reporting (80% minimum threshold)
+  - Makefile for streamlined development workflow
+  - TypeScript with strict type checking
+  - Jest test suite with mocked Obsidian APIs
+- **Performance Optimizations**:
+  - API response caching to minimize requests
+  - Optimistic UI updates for responsive feel
+  - Virtual DOM rendering with Preact
+  - Efficient GraphQL pagination handling
 
 ### Fixed
 - TypeScript errors related to filter options
@@ -65,5 +65,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/alexnodeland/obsidian-github-projects/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/alexnodeland/obsidian-github-projects/releases/tag/v0.1.0
+[Unreleased]: https://github.com/alexnodeland/obsidian-github-projects/compare/v1.0.0-alpha...HEAD
+[1.0.0-alpha]: https://github.com/alexnodeland/obsidian-github-projects/releases/tag/v1.0.0-alpha

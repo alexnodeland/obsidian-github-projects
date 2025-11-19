@@ -41,7 +41,10 @@ You need a Personal Access Token (PAT) to authenticate with GitHub's API.
    - **Token name**: `Obsidian GitHub Projects`
    - **Expiration**: Choose your preferred expiration (90 days recommended)
    - **Repository access**: Select specific repositories or all repositories
-   - **Permissions**: Grant **"Projects"** permission with **Read and Write** access
+   - **Permissions** (all required):
+     - **Projects**: Read and Write
+     - **Metadata**: Read (for organization access)
+     - **Contents**: Read (for private repositories)
 4. Click **"Generate token"**
 5. **Copy the token immediately** (it starts with `github_pat_`)
 
@@ -52,7 +55,10 @@ You need a Personal Access Token (PAT) to authenticate with GitHub's API.
 3. Configure the token:
    - **Note**: `Obsidian GitHub Projects`
    - **Expiration**: Choose your preferred expiration
-   - **Scopes**: Check the **`project`** scope (also requires `repo` for private projects)
+   - **Scopes** (select all that apply):
+     - **`project`** - Required for basic project access
+     - **`read:org`** - Required for organization project selector
+     - **`repo`** - Required for private repositories
 4. Click **"Generate token"**
 5. **Copy the token immediately** (it starts with `ghp_`)
 
@@ -62,11 +68,14 @@ You need a Personal Access Token (PAT) to authenticate with GitHub's API.
 
 1. Open **Obsidian Settings → GitHub Projects**
 2. Paste your GitHub token in the **"GitHub Token"** field
-3. Enter your **GitHub organization name** (e.g., `my-org`)
-   - Find this in your project URL: `github.com/orgs/my-org/projects/5`
-4. Enter your **Project number** (e.g., `5`)
-   - Find this in your project URL: `github.com/orgs/my-org/projects/5`
-5. (Optional) Configure **Auto-refresh interval** (default: 5 minutes)
+3. (Optional) Set a default project:
+   - **Project Owner Type**: Choose "Personal Account" or "Organization"
+   - **Organization** (if applicable): Enter the org name (e.g., `my-org`)
+     - Find this in your project URL: `github.com/orgs/my-org/projects/5`
+   - **Project Number**: Enter the number (e.g., `5`)
+     - Find this in your project URL: `github.com/orgs/my-org/projects/5`
+     - Leave empty to show project selector dropdown on startup
+4. (Optional) Configure **Auto-refresh interval** (default: 5 minutes)
 
 ### Step 3: Open Your Project Board
 
@@ -239,11 +248,11 @@ Filter by assignee, state, type, or search by text across titles and description
 
 ### Can I use multiple projects?
 
-Currently, the plugin supports one project at a time. You can switch projects by changing the organization and project number in settings.
+Yes! The plugin includes a project selector dropdown that lets you easily switch between all your accessible projects. You can also set a default project in settings.
 
 ### Does this work with personal projects?
 
-Yes! For projects under your personal account, use your GitHub username as the "organization" name.
+Yes! When configuring the plugin, select "Personal Account" as the owner type. The plugin will automatically fetch projects from your personal account.
 
 ### Can I create new issues from Obsidian?
 

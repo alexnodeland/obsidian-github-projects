@@ -182,17 +182,32 @@ docs-serve: ## Serve documentation locally (requires Python)
 
 ##@ Git Workflow
 
-pr: check ## Check before creating PR
-	@echo "$(GREEN)✓ Ready to create PR!$(NC)"
+pr: ## Run all checks including coverage verification before creating PR
+	@echo "$(CYAN)Running pre-PR checks...$(NC)"
 	@echo ""
-	@echo "Checklist:"
-	@echo "  [x] All tests passing"
-	@echo "  [x] Linter passing"
-	@echo "  [x] Type check passing"
+	@echo "$(CYAN)1/4 Running linter...$(NC)"
+	@$(MAKE) --no-print-directory lint
 	@echo ""
-	@echo "Next steps:"
-	@echo "  1. Push your branch: git push origin <branch-name>"
-	@echo "  2. Create PR on GitHub"
+	@echo "$(CYAN)2/4 Running type check...$(NC)"
+	@$(MAKE) --no-print-directory typecheck
+	@echo ""
+	@echo "$(CYAN)3/4 Running tests...$(NC)"
+	@$(MAKE) --no-print-directory test
+	@echo ""
+	@echo "$(CYAN)4/4 Verifying test coverage meets thresholds...$(NC)"
+	@npm test -- --coverage --silent 2>&1 | tee /tmp/coverage-output.tmp | grep -A 4 "Coverage summary" || true
+	@if grep -q "Jest: \"global\" coverage threshold" /tmp/coverage-output.tmp 2>/dev/null; then \
+		echo ""; \
+		echo "$(RED)✗ Coverage check failed - thresholds not met$(NC)"; \
+		echo "Check jest.config.js for required thresholds"; \
+		rm -f /tmp/coverage-output.tmp; \
+		exit 1; \
+	fi
+	@rm -f /tmp/coverage-output.tmp
+	@echo ""
+	@echo "$(GREEN)✓ All checks passed - Ready to create PR!$(NC)"
+	@echo ""
+	@echo "Coverage thresholds verified from jest.config.js"
 
 commit: check ## Check before committing
 	@echo "$(GREEN)✓ Ready to commit!$(NC)"
