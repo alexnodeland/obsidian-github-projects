@@ -2061,6 +2061,10 @@
   transform: scale(1.1);
 }
 
+.label-color-preset.selected:hover {
+  transform: scale(1.2);
+}
+
 .create-label-actions {
   display: flex;
   gap: 8px;
@@ -2068,53 +2072,12 @@
 
 .create-label-button-compact {
   flex: 1;
-  padding: 8px 16px;
-  border: none;
-  border-radius: 6px;
-  background-color: var(--interactive-accent);
-  color: var(--text-on-accent);
   font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-
-.create-label-button-compact:hover:not(:disabled) {
-  background-color: var(--interactive-accent-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
-
-.create-label-button-compact:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 .cancel-label-button {
   flex: 1;
-  padding: 8px 16px;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
-  background-color: transparent;
-  color: var(--text-normal);
   font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.cancel-label-button:hover:not(:disabled) {
-  background-color: var(--background-modifier-hover);
-  border-color: var(--text-muted);
-}
-
-.cancel-label-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 /* Make the left column flexible */

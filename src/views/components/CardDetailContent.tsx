@@ -39,7 +39,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
 
     // Labels editing state
     const [isEditingLabels, setIsEditingLabels] = useState(false);
-    const [editedLabels, setEditedLabels] = useState<Label[]>(localCard.labels || []);
+    const [editedLabels, setEditedLabels] = useState<Label[]>(card.labels || []);
     const [availableLabels, setAvailableLabels] = useState<Label[]>([]);
     const [isLoadingLabels, setIsLoadingLabels] = useState(false);
     const [newLabelName, setNewLabelName] = useState('');
@@ -50,7 +50,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
 
     // Assignees editing state
     const [isEditingAssignees, setIsEditingAssignees] = useState(false);
-    const [editedAssignees, setEditedAssignees] = useState<Assignee[]>(localCard.assignees || []);
+    const [editedAssignees, setEditedAssignees] = useState<Assignee[]>(card.assignees || []);
     const [assigneeSearch, setAssigneeSearch] = useState('');
     const [availableUsers, setAvailableUsers] = useState<any[]>([]);
     const [isSearchingUsers, setIsSearchingUsers] = useState(false);
@@ -78,10 +78,16 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
         }
     }, [card.repository, card.number, card.type, githubClient]);
 
-    // Sync local card state when card prop changes
+    // Sync local card state and edit fields when card prop changes
     useEffect(() => {
         setLocalCard(card);
-    }, [card]);
+        if (!isEditingTitle) {
+            setEditedTitle(card.title);
+        }
+        if (!isEditingBody) {
+            setEditedBody(card.body || '');
+        }
+    }, [card, isEditingTitle, isEditingBody]);
 
     // Load comments when modal opens (only if comments section is enabled)
     useEffect(() => {
@@ -128,7 +134,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
 
             console.log('[CardDetail] Title update successful');
             // Update local state first so UI reflects changes immediately
-            setLocalCard({ ...localCard, title: editedTitle });
+            setLocalCard(prev => ({ ...prev, title: editedTitle }));
             onUpdate({ title: editedTitle });
             setIsEditingTitle(false);
             success('Title updated successfully');
@@ -162,7 +168,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
                 await githubClient.updatePullRequest(card.contentId, undefined, editedBody);
             }
             // Update local state first so UI reflects changes immediately
-            setLocalCard({ ...localCard, body: editedBody });
+            setLocalCard(prev => ({ ...prev, body: editedBody }));
             onUpdate({ body: editedBody });
             setIsEditingBody(false);
             success('Description updated successfully');
@@ -225,7 +231,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
             // Sync to GitHub
             try {
                 await githubClient.removeLabels(card.contentId, [label.id]);
-                setLocalCard({ ...localCard, labels: newLabels });
+                setLocalCard(prev => ({ ...prev, labels: newLabels }));
                 onUpdate({ labels: newLabels });
                 success('Label removed successfully');
             } catch (error) {
@@ -242,7 +248,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
             // Sync to GitHub
             try {
                 await githubClient.addLabels(card.contentId, [label.id]);
-                setLocalCard({ ...localCard, labels: newLabels });
+                setLocalCard(prev => ({ ...prev, labels: newLabels }));
                 onUpdate({ labels: newLabels });
                 success('Label added successfully');
             } catch (error) {
@@ -286,7 +292,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
             };
             const newLabels = [...editedLabels, newLabel];
             setEditedLabels(newLabels);
-            setLocalCard({ ...localCard, labels: newLabels });
+            setLocalCard(prev => ({ ...prev, labels: newLabels }));
             onUpdate({ labels: newLabels });
 
             // Add to available labels
@@ -347,7 +353,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
             // Sync to GitHub
             try {
                 await githubClient.removeAssignees(card.contentId, [user.id]);
-                setLocalCard({ ...localCard, assignees: newAssignees });
+                setLocalCard(prev => ({ ...prev, assignees: newAssignees }));
                 onUpdate({ assignees: newAssignees });
                 success('Assignee removed successfully');
             } catch (error) {
@@ -365,7 +371,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
             // Sync to GitHub
             try {
                 await githubClient.addAssignees(card.contentId, [user.id]);
-                setLocalCard({ ...localCard, assignees: newAssignees });
+                setLocalCard(prev => ({ ...prev, assignees: newAssignees }));
                 onUpdate({ assignees: newAssignees });
                 success('Assignee added successfully');
             } catch (error) {
@@ -611,10 +617,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
                                         className="comment-input"
                                         placeholder="Write a comment..."
                                         value={newComment}
-                                        onChange={(e) => {
-                                            const value = (e.target as HTMLTextAreaElement).value;
-                                            setNewComment(value);
-                                        }}
+                                        onChange={(e) => setNewComment((e.target as HTMLTextAreaElement).value)}
                                         rows={3}
                                         disabled={isAddingComment}
                                     />
@@ -626,7 +629,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
                                         {isAddingComment ? <LoadingSpinner size="small" /> : 'Add Comment'}
                                     </button>
                                     <div className="editable-field-hint">
-                                        Use the button to add comment
+                                        Use the button to add a comment
                                     </div>
                                 </div>
                             </div>
@@ -788,19 +791,20 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
                                                         style={{ backgroundColor: color }}
                                                         onClick={() => setNewLabelColor(color)}
                                                         title={color}
+                                                        aria-label={`Select color ${color}`}
                                                     />
                                                 ))}
                                             </div>
                                             <div className="create-label-actions">
                                                 <button
-                                                    className="create-label-button-compact"
+                                                    className="save-button create-label-button-compact"
                                                     onClick={handleCreateLabel}
                                                     disabled={isCreatingLabel || !newLabelName.trim()}
                                                 >
                                                     {isCreatingLabel ? <LoadingSpinner size="small" /> : 'Create'}
                                                 </button>
                                                 <button
-                                                    className="cancel-label-button"
+                                                    className="cancel-button cancel-label-button"
                                                     onClick={() => {
                                                         setNewLabelName('');
                                                         setNewLabelColor('#0969da');
