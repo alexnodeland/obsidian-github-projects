@@ -7,26 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-- Comprehensive documentation structure
-- GitHub Actions CI/CD workflows
-- Code coverage reporting
-- Makefile for improved developer experience
-
-## [1.1.0] - 2024-01-XX
-
-### Added
-- Polish UI with comprehensive improvements
-- Collapsible comments panel for better UX
-- Authors and milestone to global filter options
-- Improved scrolling UX by removing nested scrollable elements
-
-### Fixed
-- TypeScript errors related to filter options
-- Scrolling issues in card detail modal
-- Edge case handling in UI components
-
-## [1.0.0] - 2024-01-XX
+## [0.1.0] - 2025-01-XX
 
 ### Added
 - Initial release
@@ -40,6 +21,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Mobile support for iOS and Android
 - Theme compatibility with Obsidian themes
 - Settings tab for configuration
+- Comprehensive documentation structure
+- GitHub Actions CI/CD workflows
+- Code coverage reporting
+- Makefile for improved developer experience
+- Polish UI with comprehensive improvements
+- Collapsible comments panel for better UX
+- Authors and milestone to global filter options
+- Improved scrolling UX by removing nested scrollable elements
+
+### Fixed
+- TypeScript errors related to filter options
+- Scrolling issues in card detail modal
+- Edge case handling in UI components
 
 ### Security
 - Secure token storage in localStorage (not synced with vault)
@@ -61,6 +55,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/alexnodeland/obsidian-github-projects/compare/v1.1.0...HEAD
-[1.1.0]: https://github.com/alexnodeland/obsidian-github-projects/compare/v1.0.0...v1.1.0
-[1.0.0]: https://github.com/alexnodeland/obsidian-github-projects/releases/tag/v1.0.0
+[Unreleased]: https://github.com/alexnodeland/obsidian-github-projects/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/alexnodeland/obsidian-github-projects/releases/tag/v0.1.0
