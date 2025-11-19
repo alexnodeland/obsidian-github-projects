@@ -18,6 +18,18 @@ module.exports = {
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
     '!src/**/*.d.ts',
-    '!src/**/__tests__/**'
-  ]
+    '!src/**/__tests__/**',
+    '!src/**/__mocks__/**'
+  ],
+  coverageDirectory: 'coverage',
+  coverageReporters: ['text', 'text-summary', 'html', 'lcov', 'json'],
+  coverageThresholds: {
+    global: {
+      branches: 70,
+      functions: 70,
+      lines: 70,
+      statements: 70,
+    },
+  },
+  collectCoverage: false, // Only collect when explicitly requested with --coverage flag
 };

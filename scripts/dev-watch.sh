@@ -1,17 +1,23 @@
 #!/bin/bash
 # Script for continuous development with auto-rebuild and copy
+# Part of obsidian-github-projects development tools
 
-# Usage: ./dev-watch.sh /path/to/your/vault
+# Usage: ./scripts/dev-watch.sh /path/to/your/vault
 
 if [ -z "$1" ]; then
-    echo "Usage: ./dev-watch.sh /path/to/your/vault"
-    echo "Example: ./dev-watch.sh ~/Documents/MyVault"
+    echo "Usage: ./scripts/dev-watch.sh /path/to/your/vault"
+    echo "Example: ./scripts/dev-watch.sh ~/Documents/MyVault"
+    echo ""
+    echo "Or use the Makefile:"
+    echo "  make dev VAULT=/path/to/your/vault"
     exit 1
 fi
 
 VAULT_PATH="$1"
 PLUGIN_DIR="$VAULT_PATH/.obsidian/plugins/github-projects"
-REPO_DIR="$(pwd)"
+# Get the repo root directory (parent of scripts/)
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # Check if vault exists
 if [ ! -d "$VAULT_PATH" ]; then

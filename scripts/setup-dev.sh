@@ -1,17 +1,23 @@
 #!/bin/bash
 # Script to set up local development in Obsidian
+# Part of obsidian-github-projects development tools
 
-# Usage: ./setup-dev.sh /path/to/your/vault
+# Usage: ./scripts/setup-dev.sh /path/to/your/vault
 
 if [ -z "$1" ]; then
-    echo "Usage: ./setup-dev.sh /path/to/your/vault"
-    echo "Example: ./setup-dev.sh ~/Documents/MyVault"
+    echo "Usage: ./scripts/setup-dev.sh /path/to/your/vault"
+    echo "Example: ./scripts/setup-dev.sh ~/Documents/MyVault"
+    echo ""
+    echo "Or use the Makefile:"
+    echo "  make setup VAULT=/path/to/your/vault"
     exit 1
 fi
 
 VAULT_PATH="$1"
 PLUGIN_DIR="$VAULT_PATH/.obsidian/plugins/github-projects"
-REPO_DIR="$(pwd)"
+# Get the repo root directory (parent of scripts/)
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # Check if vault exists
 if [ ! -d "$VAULT_PATH" ]; then
@@ -70,7 +76,9 @@ echo "4. Enable 'GitHub Projects' in the plugin list"
 echo "5. Configure your GitHub token in Settings → GitHub Projects"
 echo ""
 echo "📝 Development workflow:"
-echo "  - Make changes to the code"
-echo "  - Run: npm run build"
-echo "  - Run: ./setup-dev.sh $VAULT_PATH (to copy updated files)"
-echo "  - In Obsidian: Ctrl/Cmd+R to reload the plugin"
+echo "  - Use: make dev VAULT=$VAULT_PATH (recommended)"
+echo "  - Or manually:"
+echo "    1. Make changes to the code"
+echo "    2. Run: npm run build"
+echo "    3. Run: ./scripts/setup-dev.sh $VAULT_PATH"
+echo "    4. In Obsidian: Ctrl/Cmd+R to reload the plugin"
