@@ -19,16 +19,20 @@ module.exports = {
     'src/**/*.{ts,tsx}',
     '!src/**/*.d.ts',
     '!src/**/__tests__/**',
-    '!src/**/__mocks__/**'
+    '!src/**/__mocks__/**',
+    // Exclude UI components that require React/Preact testing setup
+    '!src/main.tsx',
+    '!src/settings.ts',
+    '!src/views/**/*.tsx'
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'text-summary', 'html', 'lcov', 'json'],
   coverageThreshold: {
     global: {
-      branches: 10,
-      functions: 10,
-      lines: 10,
-      statements: 10,
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80,
     },
   },
   collectCoverage: false, // Only collect when explicitly requested with --coverage flag
