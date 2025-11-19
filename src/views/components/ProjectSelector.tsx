@@ -1,5 +1,5 @@
 import { h, Fragment } from 'preact';
-import { useState, useEffect } from 'preact/hooks';
+import { useState } from 'preact/hooks';
 import { ProjectSummary } from '../../api/types';
 import { LoadingSpinner } from './LoadingSpinner';
 
