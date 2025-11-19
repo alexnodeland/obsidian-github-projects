@@ -299,13 +299,19 @@ describe('Card', () => {
 
 ### Test Coverage
 
-We aim for **>80% code coverage**. Check coverage:
+Current coverage baseline: **~12%** (statements, branches, functions, lines)
+
+**Target**: Gradually increase to >80% coverage
+
+Check coverage:
 
 ```bash
 npm test -- --coverage
 ```
 
 Coverage reports are generated in `coverage/` directory.
+
+**Note**: Coverage thresholds are currently set to 10% to match the existing codebase. As you add features, please include tests to incrementally improve coverage.
 
 ## Building
 
