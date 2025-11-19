@@ -7,10 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.0.0-alpha] - 2025-11-19
+## [1.0.0] - 2025-11-19
 
 ### Added
-- **Initial alpha release** with full feature set
+- **Initial release** with full feature set
 - **Kanban Board View** - Interactive GitHub Projects V2 visualization
 - **Drag and Drop** - Move items between columns with smooth interactions
 - **GitHub Authentication** - Secure Personal Access Token support (Classic and Fine-grained)
@@ -65,5 +65,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/alexnodeland/obsidian-github-projects/compare/v1.0.0-alpha...HEAD
-[1.0.0-alpha]: https://github.com/alexnodeland/obsidian-github-projects/releases/tag/v1.0.0-alpha
+[Unreleased]: https://github.com/alexnodeland/obsidian-github-projects/compare/1.0.0...HEAD
+[1.0.0]: https://github.com/alexnodeland/obsidian-github-projects/releases/tag/1.0.0

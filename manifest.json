@@ -1,10 +1,10 @@
 {
   "id": "github-projects",
   "name": "GitHub Projects",
-  "version": "1.0.0-alpha",
+  "version": "1.0.0",
   "minAppVersion": "0.15.0",
-  "description": "Manage GitHub Projects V2 with Kanban boards in Obsidian",
+  "description": "Manage GitHub Projects V2 with Kanban boards.",
   "author": "Alex Nodeland",
-  "authorUrl": "https://github.com/alexnodeland/obsidian-github-projects",
+  "authorUrl": "https://alexnodeland.github.io/alexnodeland/",
   "isDesktopOnly": false
 }
