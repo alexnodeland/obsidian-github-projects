@@ -8,6 +8,7 @@ yarn-error.log*
 main.js
 *.js.map
 dist/
+_site/
 
 # OS
 .DS_Store
