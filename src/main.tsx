@@ -128,14 +128,21 @@ export default class GitHubProjectsPlugin extends Plugin {
 
         try {
             const cacheKey = 'all-accessible-projects';
-            this.availableProjects = await this.cache.fetchWithCache(
-                cacheKey,
-                () => client.fetchAllAccessibleProjects()
-            );
-            console.log(`Fetched ${this.availableProjects.length} accessible projects`);
+
+            // Force refresh the projects list on first load to ensure we have latest data
+            // This helps when switching vaults or after plugin updates
+            this.cache.invalidate(cacheKey);
+
+            const projects = await client.fetchAllAccessibleProjects();
+            this.availableProjects = projects || [];
+
+            if (this.availableProjects.length > 0) {
+                console.log(`Fetched ${this.availableProjects.length} accessible projects for project switcher`);
+            }
         } catch (error) {
             console.error('Failed to fetch accessible projects:', error);
             // Don't throw - project switcher is optional
+            this.availableProjects = [];
         }
     }
 
@@ -227,6 +234,9 @@ export default class GitHubProjectsPlugin extends Plugin {
      * Switch to a different project
      */
     async switchProject(project: ProjectSummary): Promise<void> {
+        // Show loading notice
+        new Notice(`Switching to project: ${project.title}...`);
+
         // Update settings
         this.settings.owner = project.owner;
         this.settings.projectNumber = project.number;
@@ -242,10 +252,20 @@ export default class GitHubProjectsPlugin extends Plugin {
             this.syncManager = null;
         }
 
-        // Refresh all views to load new project
-        this.refreshViews();
+        // Clear the current project state
+        this.projectState = new ProjectState();
 
-        new Notice(`Switched to project: ${project.title}`);
+        // Load the new project data
+        try {
+            await this.loadProjectData();
+            new Notice(`✓ Switched to project: ${project.title}`);
+        } catch (error) {
+            console.error('Failed to load new project data:', error);
+            new Notice(`Failed to load project: ${project.title}`);
+        }
+
+        // Refresh all views to show new data
+        this.refreshViews();
     }
 
     /**

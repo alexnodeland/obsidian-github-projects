@@ -137,27 +137,29 @@ export const GlobalFilters = ({
                     onInput={handleSearchChange}
                 />
                 <div className="global-filters-summary">
-                    {availableProjects.length > 0 && onProjectChange && (
+                    {/* Show project switcher if we have projects (open or closed) and the callback is defined */}
+                    {availableProjects && availableProjects.length > 0 && onProjectChange && (
                         <select
                             className="project-switcher-dropdown"
                             value={currentProjectKey}
                             onChange={handleProjectChange}
                             title="Switch project"
                         >
-                            {openProjects.length === 0 && (
-                                <option value="" disabled>No projects available</option>
+                            {openProjects.length === 0 ? (
+                                <option value="" disabled>No open projects (all closed)</option>
+                            ) : (
+                                openProjects.map(project => {
+                                    const key = `${project.ownerType}-${project.owner}-${project.number}`;
+                                    const label = project.ownerType === 'user'
+                                        ? `${project.title}`
+                                        : `${project.title} (${project.owner})`;
+                                    return (
+                                        <option key={key} value={key}>
+                                            {label}
+                                        </option>
+                                    );
+                                })
                             )}
-                            {openProjects.map(project => {
-                                const key = `${project.ownerType}-${project.owner}-${project.number}`;
-                                const label = project.ownerType === 'user'
-                                    ? `${project.title}`
-                                    : `${project.title} (${project.owner})`;
-                                return (
-                                    <option key={key} value={key}>
-                                        {label}
-                                    </option>
-                                );
-                            })}
                         </select>
                     )}
                     <span className="filtered-count">

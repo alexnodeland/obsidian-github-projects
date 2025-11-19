@@ -4,6 +4,7 @@ import { h } from 'preact';
 import GitHubProjectsPlugin from '../main';
 import { Board } from './components/Board';
 import { EmptyState } from './components/EmptyState';
+import { ProjectSelector } from './components/ProjectSelector';
 import { CardDetailModal } from './modals/CardDetailModal';
 import { ProjectItem, ProjectSummary } from '../api/types';
 import { displayError } from '../utils/error-handling';
@@ -77,38 +78,65 @@ export class ProjectBoardView extends ItemView {
             return;
         }
 
-        const needsConfig = this.plugin.settings.ownerType === 'organization'
-            ? !this.plugin.settings.owner || !this.plugin.settings.projectNumber
-            : !this.plugin.settings.projectNumber;
+        // Check if a default project is configured
+        const hasDefaultProject = this.plugin.settings.projectNumber > 0;
 
-        if (needsConfig) {
-            const message = this.plugin.settings.ownerType === 'organization'
-                ? 'Please configure organization and project number in settings'
-                : 'Please configure project number in settings';
+        if (!hasDefaultProject) {
+            // No default project - show project selector
+            let projectsLoaded = false;
 
-            render(
-                <EmptyState
-                    message={message}
-                    icon="⚙️"
-                    action={{
-                        text: 'Open Settings',
-                        onClick: () => {
-                            // @ts-ignore
-                            this.app.setting.open();
-                            // @ts-ignore
-                            this.app.setting.openTabById('github-projects');
-                        }
-                    }}
-                />,
-                this.containerElement
-            );
+            // Fetch available projects and show selector
+            const loadProjectSelector = async () => {
+                if (!projectsLoaded) {
+                    await this.plugin.fetchAllProjects().catch(err => {
+                        console.warn('Failed to fetch projects for selector:', err);
+                    });
+                    projectsLoaded = true;
+                }
+
+                const handleProjectSelect = async (project: ProjectSummary) => {
+                    // Show loading state
+                    if (this.containerElement) {
+                        render(
+                            <EmptyState
+                                message={`Loading ${project.title}...`}
+                                icon="⏳"
+                            />,
+                            this.containerElement
+                        );
+                    }
+
+                    try {
+                        await this.plugin.switchProject(project);
+                    } catch (error) {
+                        displayError(error as Error);
+                        // Re-render selector on error
+                        await loadProjectSelector();
+                    }
+                };
+
+                if (this.containerElement) {
+                    render(
+                        <ProjectSelector
+                            availableProjects={this.plugin.availableProjects || []}
+                            isLoading={!projectsLoaded}
+                            onSelectProject={handleProjectSelect}
+                        />,
+                        this.containerElement
+                    );
+                }
+            };
+
+            await loadProjectSelector();
             return;
         }
 
         try {
-            // Fetch all accessible projects in background (for project switcher)
-            this.plugin.fetchAllProjects().catch(err => {
-                console.warn('Failed to fetch project list:', err);
+            // Fetch all accessible projects first (for project switcher)
+            // This is non-blocking - if it fails, the project switcher won't show but the board will still load
+            await this.plugin.fetchAllProjects().catch(err => {
+                console.warn('Failed to fetch project list for switcher:', err);
+                // Don't fail the whole render if project list fails
             });
 
             // Load project data
@@ -206,9 +234,23 @@ export class ProjectBoardView extends ItemView {
      */
     private async handleProjectChange(project: ProjectSummary) {
         try {
+            // Show loading state immediately
+            if (this.containerElement) {
+                render(
+                    <EmptyState
+                        message={`Loading ${project.title}...`}
+                        icon="⏳"
+                    />,
+                    this.containerElement
+                );
+            }
+
+            // Switch to the new project
             await this.plugin.switchProject(project);
         } catch (error) {
             displayError(error as Error);
+            // Re-render board on error to show error state
+            await this.renderBoard();
         }
     }
 

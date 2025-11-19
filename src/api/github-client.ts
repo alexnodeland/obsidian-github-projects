@@ -434,19 +434,35 @@ export class GitHubClient {
     async fetchAllAccessibleProjects(): Promise<ProjectSummary[]> {
         const allProjects: ProjectSummary[] = [];
 
-        // Fetch user projects
-        const userProjects = await this.fetchUserProjects();
-        allProjects.push(...userProjects);
+        // Fetch user projects (these don't require read:org scope)
+        try {
+            const userProjects = await this.fetchUserProjects();
+            allProjects.push(...userProjects);
+        } catch (error) {
+            console.error('Failed to fetch user projects:', error);
+        }
 
-        // Fetch organizations and their projects
-        const organizations = await this.fetchUserOrganizations();
-        for (const org of organizations) {
-            try {
-                const orgProjects = await this.fetchOrganizationProjects(org.login);
-                allProjects.push(...orgProjects);
-            } catch (error) {
-                console.error(`Failed to fetch projects for org ${org.login}:`, error);
-                // Continue with other organizations
+        // Fetch organizations and their projects (requires read:org scope)
+        // This is optional - if the token doesn't have read:org scope, we'll just skip org projects
+        try {
+            const organizations = await this.fetchUserOrganizations();
+
+            for (const org of organizations) {
+                try {
+                    const orgProjects = await this.fetchOrganizationProjects(org.login);
+                    allProjects.push(...orgProjects);
+                } catch (error) {
+                    console.error(`Failed to fetch projects for org ${org.login}:`, error);
+                    // Continue with other organizations
+                }
+            }
+        } catch (error: any) {
+            // Check if it's a scope issue
+            if (error.message?.includes('INSUFFICIENT_SCOPES') || error.message?.includes('read:org')) {
+                console.warn('Token lacks read:org scope. Only showing personal projects.');
+                console.warn('To see organization projects, add the "read:org" scope to your GitHub token at: https://github.com/settings/tokens');
+            } else {
+                console.error('Failed to fetch organizations:', error);
             }
         }
 
