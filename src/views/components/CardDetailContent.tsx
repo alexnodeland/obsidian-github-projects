@@ -445,9 +445,11 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
                                     className="card-detail-title-input"
                                     value={editedTitle}
                                     onChange={(e) => setEditedTitle((e.target as HTMLInputElement).value)}
-                                    onBlur={handleSaveTitle}
                                     onKeyDown={(e) => {
-                                        if (e.key === 'Enter') handleSaveTitle();
+                                        if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            handleSaveTitle();
+                                        }
                                         if (e.key === 'Escape') {
                                             setEditedTitle(card.title);
                                             setIsEditingTitle(false);
@@ -456,6 +458,28 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
                                     disabled={isSaving}
                                     autoFocus
                                 />
+                                <div className="editable-field-actions">
+                                    <button
+                                        className="save-button"
+                                        onClick={handleSaveTitle}
+                                        disabled={isSaving}
+                                    >
+                                        {isSaving ? <LoadingSpinner size="small" /> : 'Save'}
+                                    </button>
+                                    <button
+                                        className="cancel-button"
+                                        onClick={() => {
+                                            setEditedTitle(card.title);
+                                            setIsEditingTitle(false);
+                                        }}
+                                        disabled={isSaving}
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                                <div className="editable-field-hint">
+                                    Enter to save, Esc to cancel
+                                </div>
                             </div>
                         ) : (
                             <h1
@@ -477,7 +501,6 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
                                     className="card-detail-body-input"
                                     value={editedBody}
                                     onChange={(e) => setEditedBody((e.target as HTMLTextAreaElement).value)}
-                                    onBlur={handleSaveBody}
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter' && !e.shiftKey) {
                                             e.preventDefault();
@@ -491,8 +514,27 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
                                     rows={10}
                                     autoFocus
                                 />
+                                <div className="editable-field-actions">
+                                    <button
+                                        className="save-button"
+                                        onClick={handleSaveBody}
+                                        disabled={isSaving}
+                                    >
+                                        {isSaving ? <LoadingSpinner size="small" /> : 'Save'}
+                                    </button>
+                                    <button
+                                        className="cancel-button"
+                                        onClick={() => {
+                                            setEditedBody(card.body || '');
+                                            setIsEditingBody(false);
+                                        }}
+                                        disabled={isSaving}
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
                                 <div className="editable-field-hint">
-                                    {isSaving ? <LoadingSpinner size="small" /> : 'Enter or click outside to save, Shift+Enter for new line, Esc to cancel'}
+                                    Enter to save, Shift+Enter for new line, Esc to cancel
                                 </div>
                             </div>
                         ) : (
@@ -559,11 +601,6 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
                                         placeholder="Write a comment..."
                                         value={newComment}
                                         onChange={(e) => setNewComment((e.target as HTMLTextAreaElement).value)}
-                                        onBlur={() => {
-                                            if (newComment.trim()) {
-                                                handleAddComment();
-                                            }
-                                        }}
                                         onKeyDown={(e) => {
                                             if (e.key === 'Enter' && !e.shiftKey) {
                                                 e.preventDefault();
@@ -585,7 +622,7 @@ export const CardDetailContent = ({ card, githubClient, onUpdate, onClose, setti
                                         {isAddingComment ? <LoadingSpinner size="small" /> : 'Add Comment'}
                                     </button>
                                     <div className="editable-field-hint">
-                                        Enter or click outside to submit, Shift+Enter for new line, Esc to clear
+                                        Enter to submit, Shift+Enter for new line, Esc to clear
                                     </div>
                                 </div>
                             </div>
