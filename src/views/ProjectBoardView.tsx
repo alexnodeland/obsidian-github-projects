@@ -180,7 +180,7 @@ export class ProjectBoardView extends ItemView {
             this.app,
             card,
             githubClient,
-            (updatedCard) => {
+            (_updatedCard) => {
                 // Refresh the board to show updated card
                 this.refresh();
             }

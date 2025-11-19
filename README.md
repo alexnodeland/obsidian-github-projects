@@ -1,205 +1,235 @@
 # GitHub Projects for Obsidian
 
+[![CI](https://github.com/alexnodeland/obsidian-github-projects/actions/workflows/ci.yml/badge.svg)](https://github.com/alexnodeland/obsidian-github-projects/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/alexnodeland/obsidian-github-projects/branch/main/graph/badge.svg)](https://codecov.io/gh/alexnodeland/obsidian-github-projects)
+[![Release](https://img.shields.io/github/v/release/alexnodeland/obsidian-github-projects)](https://github.com/alexnodeland/obsidian-github-projects/releases/latest)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Obsidian Downloads](https://img.shields.io/badge/dynamic/json?logo=obsidian&color=%23483699&label=downloads&query=%24%5B%22github-projects%22%5D.downloads&url=https%3A%2F%2Fraw.githubusercontent.com%2Fobsidianmd%2Fobsidian-releases%2Fmaster%2Fcommunity-plugin-stats.json)](https://obsidian.md/plugins?id=github-projects)
+
 Manage GitHub Projects V2 with Kanban boards directly in Obsidian.
 
-## Features
+---
 
-- 📋 **Kanban Board View**: Visualize your GitHub Projects V2 as interactive Kanban boards
-- 🔄 **Drag & Drop**: Move items between columns with smooth drag-and-drop
-- 🔐 **Secure Authentication**: Personal Access Token stored in localStorage (not synced with vault)
-- ⚡ **Real-time Sync**: Auto-refresh project data from GitHub at configurable intervals
-- 🎨 **Theme Compatible**: Seamlessly integrates with Obsidian themes
-- 📱 **Mobile Support**: Works on desktop and mobile (iOS/Android)
+## ✨ Features
 
-## Installation
+- 📋 **Kanban Board View** - Visualize your GitHub Projects V2 as interactive Kanban boards
+- 🔄 **Drag & Drop** - Move items between columns with smooth drag-and-drop interactions
+- 🔐 **Secure Authentication** - Personal Access Token stored in localStorage (not synced with vault)
+- ⚡ **Real-time Sync** - Auto-refresh project data from GitHub at configurable intervals
+- 🎨 **Theme Compatible** - Seamlessly integrates with Obsidian themes (light & dark mode)
+- 📱 **Mobile Support** - Works on desktop and mobile (iOS/Android)
+- 🔍 **Powerful Filtering** - Filter by assignee, state, type, or search across titles and descriptions
+- 💬 **Card Details** - Click any card to view full details, comments, and metadata
 
-### From Obsidian Community Plugins
+## 📸 Screenshots
 
-1. Open Settings in Obsidian
-2. Go to Community Plugins and disable Safe Mode
-3. Click Browse and search for "GitHub Projects"
-4. Click Install, then Enable
+<!-- TODO: Add screenshots -->
+
+## 📦 Installation
+
+### From Obsidian Community Plugins (Recommended)
+
+1. Open **Settings** in Obsidian
+2. Navigate to **Community Plugins** and disable **Safe Mode**
+3. Click **Browse** and search for **"GitHub Projects"**
+4. Click **Install**, then **Enable**
 
 ### Manual Installation
 
-1. Download the latest release from GitHub
-2. Extract the files to `{VaultFolder}/.obsidian/plugins/github-projects/`
+1. Download the latest release from [GitHub releases](https://github.com/alexnodeland/obsidian-github-projects/releases)
+2. Extract `main.js`, `manifest.json`, and `styles.css` to `{VaultFolder}/.obsidian/plugins/github-projects/`
 3. Reload Obsidian
-4. Enable the plugin in Settings → Community Plugins
+4. Enable the plugin in **Settings → Community Plugins**
 
-## Setup
+## 🚀 Quick Start
 
 ### 1. Create a GitHub Personal Access Token
 
-1. Go to [GitHub Settings → Tokens](https://github.com/settings/tokens)
-2. Click "Generate new token" (fine-grained or classic)
-3. For **fine-grained tokens**: Grant "Projects: Read and Write" permission
-4. For **classic tokens**: Select the "project" scope
-5. Copy the token (starts with `ghp_` or `github_pat_`)
+**For Fine-Grained Tokens (Recommended)**:
+1. Go to [GitHub Settings → Personal access tokens → Fine-grained tokens](https://github.com/settings/tokens?type=beta)
+2. Click **"Generate new token"**
+3. Grant **"Projects: Read and Write"** permission
+4. Copy the token (starts with `github_pat_`)
+
+**For Classic Tokens**:
+1. Go to [GitHub Settings → Personal access tokens](https://github.com/settings/tokens)
+2. Click **"Generate new token (classic)"**
+3. Select the **`project`** scope
+4. Copy the token (starts with `ghp_`)
 
 ### 2. Configure the Plugin
 
-1. Open Obsidian Settings → GitHub Projects
-2. Paste your GitHub token in the authentication section
-3. Enter your **Organization name** (e.g., "octo-org")
-4. Enter your **Project number** (from the URL: `github.com/orgs/octo-org/projects/5` → number is `5`)
-5. (Optional) Configure auto-refresh interval
+1. Open **Obsidian Settings → GitHub Projects**
+2. Paste your token
+3. Enter your **organization name** (e.g., `my-org`)
+4. Enter your **project number** (from URL: `github.com/orgs/my-org/projects/5` → `5`)
 
-### 3. Open the Project Board
+### 3. Open Your Board
 
-- Click the dashboard icon in the ribbon, or
-- Use the command palette: "GitHub Projects: Open Project Board"
+- Click the dashboard icon (📋) in the ribbon, or
+- Use command palette: **"GitHub Projects: Open Project Board"**
 
-## Usage
+## 📖 Documentation
 
-### View Project Board
+- **[User Guide](docs/user-guide.md)** - Installation, setup, and usage instructions
+- **[Developer Guide](docs/developer-guide.md)** - Contributing and development setup
+- **[Architecture](docs/architecture.md)** - Technical design and architecture
+- **[API Reference](docs/api-reference.md)** - Plugin API documentation
 
-The board displays your project columns based on the "Status" field. Each card shows:
-
-- Issue/PR number and title
-- Description preview
-- Assignees with avatars
-- State (Open/Closed/Merged)
-- Item type (Issue/PR/Draft)
-
-### Move Items
-
-Drag cards between columns to update their status. Changes are:
-
-1. Applied immediately in the UI (optimistic update)
-2. Synced to GitHub in the background
-3. Verified on next auto-refresh
-
-### View Card Details
-
-Click any card to see full details:
-
-- Complete description
-- All assignees
-- All field values
-- Link to view on GitHub
-
-### Manual Refresh
-
-Use "GitHub Projects: Refresh Project Data" command or the Refresh button in settings to manually sync.
-
-## Settings
-
-| Setting | Description | Default |
-|---------|-------------|---------|
-| GitHub Token | Personal Access Token for authentication | - |
-| Organization | GitHub organization name | - |
-| Project Number | Project number from URL | 1 |
-| Auto-refresh Interval | How often to sync from GitHub | 5 minutes |
-
-## Development
+## 🛠️ Development
 
 ### Prerequisites
 
-- Node.js 16+
+- Node.js 18+
 - npm or yarn
+- Obsidian installed
 
-### Setup
+### Quick Setup
 
 ```bash
+# Clone the repository
+git clone https://github.com/alexnodeland/obsidian-github-projects.git
+cd obsidian-github-projects
+
+# Install dependencies
 npm install
-```
 
-### Build
-
-```bash
-# Development build with watch mode
-npm run dev
-
-# Production build
+# Build the plugin
 npm run build
-```
 
-### Test
-
-```bash
 # Run tests
 npm test
 
-# Run tests in watch mode
-npm run test:watch
+# Start development mode (auto-rebuild and copy to vault)
+make dev VAULT=/path/to/your/vault
 ```
 
-### Project Structure
+### Available Commands
 
+```bash
+# Development
+make dev VAULT=/path/to/vault   # Start development mode
+make build                       # Production build
+make test                        # Run tests
+make test:coverage               # Run tests with coverage
+
+# Quality Checks
+make lint                        # Run linter
+make typecheck                   # Type checking
+make check                       # Run all checks (lint + typecheck + test)
+
+# Utilities
+make clean                       # Clean build artifacts
+make help                        # Show all available commands
 ```
-src/
-├── api/              # GitHub GraphQL client
-├── state/            # State management
-├── views/            # UI components and views
-├── utils/            # Utility functions
-├── settings.ts       # Settings tab
-└── main.tsx          # Plugin entry point
+
+See the [Developer Guide](docs/developer-guide.md) for detailed instructions.
+
+## 🏗️ Architecture
+
+The plugin is built with:
+- **TypeScript** - Type-safe code
+- **Preact** - Lightweight React alternative (3KB)
+- **SortableJS** - Smooth drag-and-drop
+- **GitHub GraphQL API** - Projects V2 integration
+- **Obsidian Plugin API** - Native Obsidian integration
+
+Key architectural decisions:
+- **Event-driven state management** for reactive UI
+- **Optimistic updates** for responsive user experience
+- **Secure token storage** in localStorage (not vault files)
+- **Virtual DOM rendering** for performance
+
+Learn more in the [Architecture documentation](docs/architecture.md).
+
+## 🧪 Testing
+
+We maintain high test coverage and code quality:
+
+```bash
+npm test                  # Run tests
+npm run test:watch        # Watch mode
+npm run test:coverage     # Generate coverage report
 ```
 
-## Architecture
+Coverage reports are available on [Codecov](https://codecov.io/gh/alexnodeland/obsidian-github-projects).
 
-- **API Layer**: GraphQL client for GitHub Projects V2 API
-- **State Management**: Event-driven state with Obsidian Events
-- **UI Components**: Preact for reactive components
-- **Drag & Drop**: SortableJS for smooth interactions
-- **Sync**: Bidirectional sync with optimistic updates
+## 🤝 Contributing
 
-## Security
+Contributions are welcome! We appreciate:
 
-- Tokens are stored in localStorage (not in vault files)
-- Tokens are NOT synced or backed up
-- Use fine-grained tokens with minimal permissions
-- Other Obsidian plugins technically have access to localStorage
+- 🐛 Bug reports
+- ✨ Feature requests
+- 📖 Documentation improvements
+- 💻 Code contributions
+- 🎨 UI/UX enhancements
 
-## Limitations
+Please read our [Contributing Guide](CONTRIBUTORS.md) and [Developer Guide](docs/developer-guide.md) before submitting PRs.
 
-- Only supports GitHub Projects V2 (not legacy Projects)
-- Requires "Status" field for column-based boards
-- GraphQL rate limits apply (5,000 points/hour)
-
-## Troubleshooting
-
-### Connection Failed
-
-- Verify token has "project" or "Projects: Read and Write" permission
-- Check organization name and project number are correct
-- Ensure project is accessible with your GitHub account
-
-### Items Not Syncing
-
-- Check auto-refresh interval in settings
-- Manually refresh with the command
-- Check browser console for errors
-
-### Board Not Displaying
-
-- Ensure project has a "Status" field (single-select type)
-- Verify project has items
-- Try refreshing the view
-
-## Contributing
-
-Contributions are welcome! Please:
+### Development Workflow
 
 1. Fork the repository
-2. Create a feature branch
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
 3. Make your changes with tests
-4. Submit a pull request
+4. Run checks: `make check`
+5. Commit: `git commit -m "feat: add amazing feature"`
+6. Push and create a PR
 
-## License
+## 📝 Changelog
 
-MIT License - see LICENSE file for details
+See [CHANGELOG.md](CHANGELOG.md) for release history and changes.
 
-## Support
+## 🔒 Security
 
-- [Report issues](https://github.com/yourusername/obsidian-github-projects/issues)
-- [Request features](https://github.com/yourusername/obsidian-github-projects/issues/new)
-- [Discussions](https://github.com/yourusername/obsidian-github-projects/discussions)
+- Tokens are stored in localStorage (not in vault files)
+- Tokens are **not synced** via Obsidian Sync
+- Use fine-grained tokens with minimal permissions
+- Set token expiration for additional security
 
-## Acknowledgments
+See the [User Guide](docs/user-guide.md#token-security-concerns) for more details.
 
-- Built with the [Obsidian Plugin API](https://github.com/obsidianmd/obsidian-api)
-- Inspired by [obsidian-kanban](https://github.com/mgmeyers/obsidian-kanban)
-- Uses [SortableJS](https://github.com/SortableJS/Sortable) for drag-and-drop
-- UI powered by [Preact](https://preactjs.com/)
+## ❓ FAQ
+
+**Q: Can I use multiple projects?**
+A: Currently, one project at a time. Switch projects by changing settings.
+
+**Q: Does this work with personal projects?**
+A: Yes! Use your GitHub username as the organization name.
+
+**Q: Can I create new issues from Obsidian?**
+A: Not yet. This feature is planned for a future release.
+
+**Q: What about rate limits?**
+A: The plugin uses GitHub's GraphQL API (5,000 points/hour). Normal usage stays well within limits.
+
+See the full [FAQ in the User Guide](docs/user-guide.md#faq).
+
+## 🙏 Acknowledgments
+
+- **[Obsidian](https://obsidian.md/)** - For creating an amazing platform
+- **[obsidian-kanban](https://github.com/mgmeyers/obsidian-kanban)** - Inspiration for board UI
+- **[Preact](https://preactjs.com/)** - Lightweight UI framework
+- **[SortableJS](https://github.com/SortableJS/Sortable)** - Drag-and-drop functionality
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 💬 Support
+
+- **Documentation**: [docs/](docs/)
+- **Bug Reports**: [GitHub Issues](https://github.com/alexnodeland/obsidian-github-projects/issues)
+- **Feature Requests**: [GitHub Discussions](https://github.com/alexnodeland/obsidian-github-projects/discussions)
+- **Questions**: [GitHub Discussions Q&A](https://github.com/alexnodeland/obsidian-github-projects/discussions/categories/q-a)
+
+---
+
+<div align="center">
+
+**⭐ Star this repo if you find it helpful!**
+
+Made with ❤️ for the Obsidian community
+
+[Report Bug](https://github.com/alexnodeland/obsidian-github-projects/issues) · [Request Feature](https://github.com/alexnodeland/obsidian-github-projects/discussions) · [Documentation](docs/)
+
+</div>

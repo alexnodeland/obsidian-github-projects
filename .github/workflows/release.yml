@@ -1,0 +1,91 @@
+name: Release Plugin
+
+on:
+  push:
+    tags:
+      - '*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build plugin
+        run: npm run build
+
+      - name: Create release package
+        run: |
+          mkdir release
+          cp main.js manifest.json styles.css release/
+          cd release
+          zip -r ../obsidian-github-projects-${{ github.ref_name }}.zip .
+          cd ..
+
+      - name: Extract release notes
+        id: extract_notes
+        run: |
+          # Extract version from tag
+          VERSION="${GITHUB_REF#refs/tags/}"
+
+          # Try to extract changelog section for this version
+          if grep -q "## \[$VERSION\]" CHANGELOG.md 2>/dev/null; then
+            awk "/## \[$VERSION\]/,/## \[/" CHANGELOG.md | sed '1d;$d' > release-notes.txt
+          else
+            echo "Release $VERSION" > release-notes.txt
+            echo "" >> release-notes.txt
+            echo "See CHANGELOG.md for details." >> release-notes.txt
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: false
+          prerelease: ${{ contains(github.ref, 'beta') || contains(github.ref, 'alpha') }}
+          body_path: release-notes.txt
+          files: |
+            obsidian-github-projects-${{ github.ref_name }}.zip
+            main.js
+            manifest.json
+            styles.css
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update manifest versions
+        if: ${{ !contains(github.ref, 'beta') && !contains(github.ref, 'alpha') }}
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/}"
+          jq --arg version "$VERSION" '.version = $version' manifest.json > manifest.tmp
+          mv manifest.tmp manifest.json
+
+          # Update versions.json
+          jq --arg version "$VERSION" \
+             --arg min_version "$(jq -r '.minAppVersion' manifest.json)" \
+             '. + {($version): $min_version}' versions.json > versions.tmp
+          mv versions.tmp versions.json
+
+      - name: Commit version updates
+        if: ${{ !contains(github.ref, 'beta') && !contains(github.ref, 'alpha') }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add manifest.json versions.json
+          git commit -m "chore: update manifest and versions for release ${{ github.ref_name }}" || echo "No changes to commit"
+          git push origin HEAD:main || echo "No changes to push"
