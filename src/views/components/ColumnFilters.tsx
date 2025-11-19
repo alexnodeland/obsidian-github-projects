@@ -32,8 +32,8 @@ export const ColumnFilters = ({
     onSortChange,
     availableLabels,
     availableAssignees,
-    availableAuthors,
-    availableMilestones,
+    availableAuthors: _availableAuthors, // Reserved for future use
+    availableMilestones: _availableMilestones, // Reserved for future use
     availableRepositories
 }: ColumnFiltersProps) => {
     const [isExpanded, setIsExpanded] = useState(false);

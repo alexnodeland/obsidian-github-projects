@@ -9,8 +9,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "lint": "eslint src --ext .ts,.tsx",
-    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
     "typecheck": "tsc --noEmit --skipLibCheck",
     "check": "npm run lint && npm run typecheck && npm test",
     "version": "npm run build"

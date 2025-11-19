@@ -14,7 +14,7 @@ interface CardDetailContentProps {
 }
 
 export const CardDetailContent = ({ card, githubClient, onUpdate, onClose }: CardDetailContentProps) => {
-    const { success, error: showError, info } = useToasts();
+    const { success, error: showError, info: _info } = useToasts();
 
     const [isEditingTitle, setIsEditingTitle] = useState(false);
     const [editedTitle, setEditedTitle] = useState(card.title);
