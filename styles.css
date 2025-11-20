@@ -849,6 +849,14 @@
   min-height: 400px;
 }
 
+/* Force single column on mobile regardless of inline styles */
+@media (max-width: 900px) {
+  .card-detail-main {
+    grid-template-columns: 1fr !important;
+    gap: 16px;
+  }
+}
+
 .card-detail-left {
   display: flex;
   flex-direction: column;
@@ -1462,20 +1470,6 @@
   margin-left: 0;
 }
 
-/* Responsive - Stack columns on smaller screens */
-@media (max-width: 900px) {
-  .card-detail-main {
-    grid-template-columns: 1fr;
-  }
-
-  .card-detail-right {
-    border-left: none;
-    border-top: 1px solid var(--background-modifier-border);
-    padding-left: 0;
-    padding-top: 24px;
-  }
-}
-
 /* Dark theme adjustments */
 .theme-dark .kanban-card {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
@@ -1584,35 +1578,113 @@
   .card-detail-modal .modal {
     max-width: 100% !important;
     width: 100% !important;
+    height: 100vh !important;
+    margin: 0 !important;
+  }
+
+  .card-detail-modal .modal-content {
+    max-height: 100vh !important;
+    height: 100vh !important;
   }
 
   .card-detail-container {
     padding: 8px;
+    height: 100%;
   }
 
   .card-detail-main {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
     gap: 16px;
+    min-height: auto;
   }
 
   .card-detail-right {
     border-left: none;
-    border-top: 1px solid var(--background-modifier-border);
+    border-top: 2px solid var(--background-modifier-border);
     padding-left: 0;
     padding-top: 16px;
+    margin-top: 16px;
   }
 
   .card-detail-title {
-    font-size: 22px;
+    font-size: 20px;
+    line-height: 1.3;
   }
 
   .card-detail-title-input {
-    font-size: 22px;
+    font-size: 20px;
+  }
+
+  /* Hide resize handles on mobile */
+  .resize-handle {
+    display: none !important;
+  }
+
+  /* Optimize button layouts */
+  .editable-field-actions {
+    flex-direction: row;
+    gap: 8px;
+  }
+
+  .save-button,
+  .cancel-button {
+    flex: 1;
+    min-width: 0;
   }
 
   /* Field grid mobile */
   .fields-list {
     grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  /* Modal sections - better spacing on mobile */
+  .card-detail-section {
+    margin-bottom: 16px;
+  }
+
+  .card-detail-section h3 {
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+
+  /* Labels and badges in modal */
+  .label-list,
+  .card-detail-badges {
+    gap: 6px;
+  }
+
+  .label-badge {
+    font-size: 11px;
+    padding: 3px 10px;
+  }
+
+  /* Assignee list mobile */
+  .assignee-list {
+    gap: 10px;
+  }
+
+  /* Comments section mobile */
+  .comments-list {
+    max-height: 300px;
+    padding: 10px 12px;
+  }
+
+  .comment-item {
+    padding: 12px;
+  }
+
+  .comment-body {
+    font-size: 12px;
+  }
+
+  .add-comment-form {
+    padding: 10px 12px;
+  }
+
+  .comment-input {
+    min-height: 70px;
+    font-size: 13px;
   }
 
   /* Project selector mobile */
@@ -1731,15 +1803,67 @@
 
   /* Reduce modal padding */
   .card-detail-container {
-    padding: 4px;
+    padding: 6px;
   }
 
   .card-detail-title {
     font-size: 18px;
+    padding: 6px;
   }
 
   .card-detail-title-input {
     font-size: 18px;
+    padding: 6px;
+  }
+
+  /* Modal sections on tiny screens */
+  .card-detail-section h3 {
+    font-size: 12px;
+  }
+
+  .card-detail-header {
+    font-size: 11px;
+    gap: 8px;
+  }
+
+  /* Body section */
+  .card-detail-body {
+    padding: 10px;
+    font-size: 13px;
+  }
+
+  .card-detail-body-input {
+    padding: 10px;
+    font-size: 13px;
+    min-height: 150px;
+  }
+
+  /* Labels on tiny screens */
+  .label-badge {
+    font-size: 10px;
+    padding: 2px 8px;
+  }
+
+  /* Buttons on tiny screens */
+  .save-button,
+  .cancel-button {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  /* Timestamps */
+  .timestamp-item {
+    font-size: 11px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  /* GitHub link button */
+  .github-link-button {
+    padding: 10px;
+    font-size: 12px;
+    width: 100%;
   }
 }
 
@@ -1760,7 +1884,23 @@
 
   /* Card detail modal for tablets */
   .card-detail-main {
-    grid-template-columns: 1.5fr 1fr;
+    grid-template-columns: 1.5fr 1fr !important;
+  }
+
+  .card-detail-title {
+    font-size: 24px;
+  }
+
+  .card-detail-title-input {
+    font-size: 24px;
+  }
+
+  /* Adjust modal width for tablets */
+  .modal.card-detail-modal,
+  .card-detail-modal.modal,
+  .card-detail-modal .modal {
+    max-width: 100% !important;
+    width: 98vw !important;
   }
 }
 
