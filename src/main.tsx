@@ -214,15 +214,12 @@ export default class GitHubProjectsPlugin extends Plugin {
             // View already exists, reveal it
             leaf = leaves[0];
         } else {
-            // Create new view in right sidebar
-            const rightLeaf = workspace.getRightLeaf(false);
-            if (rightLeaf) {
-                leaf = rightLeaf;
-                await leaf.setViewState({
-                    type: VIEW_TYPE_PROJECT_BOARD,
-                    active: true
-                });
-            }
+            // Create new view in a tab
+            leaf = workspace.getLeaf('tab');
+            await leaf.setViewState({
+                type: VIEW_TYPE_PROJECT_BOARD,
+                active: true
+            });
         }
 
         if (leaf) {
