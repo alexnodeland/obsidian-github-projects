@@ -24,6 +24,7 @@
   flex: 1;
   overflow-x: auto;
   overflow-y: hidden;
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
 }
 
 /* Column Styling */
@@ -200,6 +201,7 @@
   overflow-y: auto;
   min-height: 50px;
   padding: 4px;
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
 }
 
 /* Card Styling */
@@ -1509,6 +1511,30 @@
   .kanban-card {
     padding: 16px;
     margin-bottom: 12px;
+    -webkit-tap-highlight-color: transparent; /* Remove tap highlight on iOS */
+    user-select: none; /* Prevent text selection during drag */
+    -webkit-user-select: none;
+  }
+
+  /* Card content overflow fixes */
+  .card-repository {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+  }
+
+  .card-label {
+    max-width: 80px;
+  }
+
+  .card-header {
+    flex-wrap: wrap;
+  }
+
+  .card-header-badges {
+    flex-shrink: 1;
+    min-width: 0;
   }
 
   /* Global filters mobile optimization */
@@ -1657,6 +1683,7 @@
   /* Smaller text on tiny screens */
   .card-title {
     font-size: 13px;
+    word-break: break-word;
   }
 
   .card-description {
@@ -1667,11 +1694,39 @@
     font-size: 13px;
   }
 
+  /* Further reduce label width on tiny screens */
+  .card-label {
+    max-width: 60px;
+    font-size: 9px;
+    padding: 2px 7px;
+  }
+
+  .card-repository {
+    font-size: 9px;
+  }
+
   /* Stack card metadata vertically on tiny screens */
   .card-metadata {
     flex-direction: column;
     align-items: flex-start;
     gap: 6px;
+  }
+
+  /* Ensure badges scale down on tiny screens */
+  .card-header-badges {
+    gap: 3px;
+  }
+
+  .card-unavailable-badge,
+  .pr-draft-badge {
+    font-size: 8px;
+    padding: 2px 4px;
+  }
+
+  .pr-review-badge,
+  .ci-status-badge {
+    padding: 2px 5px;
+    font-size: 9px;
   }
 
   /* Reduce modal padding */
