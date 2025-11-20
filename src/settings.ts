@@ -97,7 +97,7 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
         const { containerEl } = this;
         containerEl.empty();
 
-        containerEl.createEl('h2', { text: 'GitHub Projects Settings' });
+        ;
 
         // Security notice
         const securityNotice = containerEl.createDiv({ cls: 'setting-item-description' });
@@ -114,17 +114,17 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
             Create token at: <a href="https://github.com/settings/tokens" target="_blank">github.com/settings/tokens</a>
         `;
 
-        containerEl.createEl('h3', { text: 'Authentication' });
+        new Setting(containerEl).setName("Authentication").setHeading();
 
         const token = this.plugin.tokenManager.getToken();
 
         if (token) {
             // Token is set - show connection status
             new Setting(containerEl)
-                .setName('GitHub Connection')
+                .setName('GitHub connection')
                 .setDesc('Your GitHub account is connected')
                 .addButton(btn => btn
-                    .setButtonText('Test Connection')
+                    .setButtonText('Test connection')
                     .onClick(async () => {
                         btn.setDisabled(true);
                         try {
@@ -152,10 +152,10 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
         } else {
             // No token - show input
             new Setting(containerEl)
-                .setName('GitHub Personal Access Token')
+                .setName('GitHub personal access token')
                 .setDesc('Enter your GitHub token to connect')
                 .addText(text => {
-                    text.setPlaceholder('ghp_xxxxxxxxxxxxx or github_pat_xxxxxxxxxxxxx')
+                    text.setPlaceholder('Ghp_xxxxxxxxxxxxx or GitHub_pat_xxxxxxxxxxxxx')
                         .onChange(async (value) => {
                             if (value.length > 10) { // Basic validation
                                 this.plugin.tokenManager.setToken(value);
@@ -173,14 +173,14 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
                             }
                         });
                     text.inputEl.type = 'password';
-                    text.inputEl.style.width = '100%';
+                    text.inputEl.setCssProps({ width: '100%' });
                 });
         }
 
-        containerEl.createEl('h3', { text: 'Default Project (Optional)' });
+        new Setting(containerEl).setName("Default project (optional)").setHeading();
 
         const defaultProjectInfo = containerEl.createDiv({ cls: 'setting-item-description' });
-        defaultProjectInfo.style.marginBottom = '12px';
+        defaultProjectInfo.setCssProps({ marginBottom: '12px' });
         defaultProjectInfo.innerHTML = `
             <strong>📌 Set a default project to load on startup</strong><br>
             Leave empty to choose a project each time you open the board.<br>
@@ -188,10 +188,10 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
         `;
 
         new Setting(containerEl)
-            .setName('Default Project Owner Type')
+            .setName('Default project owner type')
             .setDesc('Is the default project a personal or organization project?')
             .addDropdown(dropdown => dropdown
-                .addOption('user', 'Personal Account')
+                .addOption('user', 'Personal account')
                 .addOption('organization', 'Organization')
                 .setValue(this.plugin.settings.ownerType)
                 .onChange(async (value: 'user' | 'organization') => {
@@ -203,10 +203,10 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
         // Only show owner field for organizations
         if (this.plugin.settings.ownerType === 'organization') {
             new Setting(containerEl)
-                .setName('Default Organization')
+                .setName('Default organization')
                 .setDesc('GitHub organization name for the default project (e.g., "octo-org")')
                 .addText(text => text
-                    .setPlaceholder('octo-org')
+                    .setPlaceholder('Octo-org')
                     .setValue(this.plugin.settings.owner)
                     .onChange(async (value) => {
                         this.plugin.settings.owner = value;
@@ -215,8 +215,7 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
         } else {
             // For personal projects, show info message
             const infoEl = containerEl.createDiv({ cls: 'setting-item-description' });
-            infoEl.style.marginTop = '12px';
-            infoEl.style.marginBottom = '12px';
+            infoEl.setCssProps({ marginTop: '12px', marginBottom: '12px' });
             infoEl.innerHTML = `
                 <strong>ℹ️ Personal Projects:</strong><br>
                 Your personal projects will be loaded based on your token.<br>
@@ -229,7 +228,7 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
             : 'github.com/orgs/octo-org/projects/5';
 
         new Setting(containerEl)
-            .setName('Default Project Number')
+            .setName('Default project number')
             .setDesc(`Project number from the URL (e.g., 5 from ${projectUrlExample}) - Leave empty for project selector`)
             .addText(text => text
                 .setPlaceholder('5 (leave empty for selector)')
@@ -248,10 +247,10 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
                     }
                 }));
 
-        containerEl.createEl('h3', { text: 'Sync Settings' });
+        new Setting(containerEl).setName("Sync").setHeading();
 
         new Setting(containerEl)
-            .setName('Auto-refresh Interval')
+            .setName('Auto-refresh interval')
             .setDesc('How often to refresh project data from GitHub')
             .addDropdown(dropdown => dropdown
                 .addOption('0', 'Manual only')
@@ -270,14 +269,14 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
                 }));
 
         // Card Display Settings
-        containerEl.createEl('h3', { text: 'Card Display Settings' });
+        new Setting(containerEl).setName("Card display").setHeading();
         containerEl.createEl('p', {
-            text: 'Customize what information appears on cards in the Kanban board',
+            text: 'Customize what information appears on cards in the kanban board',
             cls: 'setting-item-description'
         });
 
         new Setting(containerEl)
-            .setName('Card Title Length')
+            .setName('Card title length')
             .setDesc('Maximum characters to show in card titles')
             .addText(text => text
                 .setPlaceholder('80')
@@ -292,7 +291,7 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
                 }));
 
         new Setting(containerEl)
-            .setName('Show Repository')
+            .setName('Show repository')
             .setDesc('Display repository name on cards')
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.cardDisplay.showRepository)
@@ -303,7 +302,7 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
                 }));
 
         new Setting(containerEl)
-            .setName('Show Labels')
+            .setName('Show labels')
             .setDesc('Display labels on cards')
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.cardDisplay.showLabels)
@@ -315,8 +314,8 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
 
         if (this.plugin.settings.cardDisplay.showLabels) {
             new Setting(containerEl)
-                .setName('Maximum Labels')
-                .setDesc('Maximum number of labels to show on cards (rest will show as +N)')
+                .setName('Maximum labels')
+                .setDesc('Maximum number of labels to show on cards (rest will show as +n)')
                 .addText(text => text
                     .setPlaceholder('3')
                     .setValue(String(this.plugin.settings.cardDisplay.maxLabels))
@@ -331,7 +330,7 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
         }
 
         new Setting(containerEl)
-            .setName('Show Description')
+            .setName('Show description')
             .setDesc('Display issue/PR description on cards')
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.cardDisplay.showDescription)
@@ -343,7 +342,7 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
 
         if (this.plugin.settings.cardDisplay.showDescription) {
             new Setting(containerEl)
-                .setName('Description Length')
+                .setName('Description length')
                 .setDesc('Maximum characters to show in card descriptions')
                 .addText(text => text
                     .setPlaceholder('100')
@@ -359,7 +358,7 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
         }
 
         new Setting(containerEl)
-            .setName('Show Milestone')
+            .setName('Show milestone')
             .setDesc('Display milestone information on cards')
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.cardDisplay.showMilestone)
@@ -370,7 +369,7 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
                 }));
 
         new Setting(containerEl)
-            .setName('Show PR Changes')
+            .setName('Show PR changes')
             .setDesc('Display additions/deletions count on PR cards')
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.cardDisplay.showPRChanges)
@@ -381,7 +380,7 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
                 }));
 
         new Setting(containerEl)
-            .setName('Show Author')
+            .setName('Show author')
             .setDesc('Display author avatar on cards')
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.cardDisplay.showAuthor)
@@ -392,7 +391,7 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
                 }));
 
         new Setting(containerEl)
-            .setName('Show Assignees')
+            .setName('Show assignees')
             .setDesc('Display assignee avatars on cards')
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.cardDisplay.showAssignees)
@@ -404,8 +403,8 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
 
         if (this.plugin.settings.cardDisplay.showAssignees) {
             new Setting(containerEl)
-                .setName('Maximum Assignees')
-                .setDesc('Maximum number of assignees to show on cards (rest will show as +N)')
+                .setName('Maximum assignees')
+                .setDesc('Maximum number of assignees to show on cards (rest will show as +n)')
                 .addText(text => text
                     .setPlaceholder('2')
                     .setValue(String(this.plugin.settings.cardDisplay.maxAssignees))
@@ -420,7 +419,7 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
         }
 
         new Setting(containerEl)
-            .setName('Show Comment Count')
+            .setName('Show comment count')
             .setDesc('Display number of comments on cards')
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.cardDisplay.showCommentCount)
@@ -431,7 +430,7 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
                 }));
 
         new Setting(containerEl)
-            .setName('Show Reaction Count')
+            .setName('Show reaction count')
             .setDesc('Display number of reactions on cards')
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.cardDisplay.showReactionCount)
@@ -442,7 +441,7 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
                 }));
 
         new Setting(containerEl)
-            .setName('Show Updated Time')
+            .setName('Show updated time')
             .setDesc('Display last updated time on cards')
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.cardDisplay.showUpdatedTime)
@@ -453,8 +452,8 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
                 }));
 
         new Setting(containerEl)
-            .setName('Show State')
-            .setDesc('Display state badge (OPEN/CLOSED) on cards')
+            .setName('Show state')
+            .setDesc('Display state badge (open/closed) on cards')
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.cardDisplay.showState)
                 .onChange(async (value) => {
@@ -464,15 +463,15 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
                 }));
 
         // Modal Display Settings
-        containerEl.createEl('h3', { text: 'Detail Modal Settings' });
+        new Setting(containerEl).setName("Detail modal").setHeading();
         containerEl.createEl('p', {
             text: 'Customize what sections appear in the card detail modal',
             cls: 'setting-item-description'
         });
 
         new Setting(containerEl)
-            .setName('Show Status Badges')
-            .setDesc('Display status, review decision, and CI badges')
+            .setName('Show status badges')
+            .setDesc('Display status, review decision, and ci badges')
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.modalDisplay.showStatusBadges)
                 .onChange(async (value) => {
@@ -481,7 +480,7 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
                 }));
 
         new Setting(containerEl)
-            .setName('Show Repository')
+            .setName('Show repository')
             .setDesc('Display repository section in modal')
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.modalDisplay.showRepository)
@@ -491,7 +490,7 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
                 }));
 
         new Setting(containerEl)
-            .setName('Show Labels')
+            .setName('Show labels')
             .setDesc('Display labels section in modal (editable)')
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.modalDisplay.showLabels)
@@ -501,7 +500,7 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
                 }));
 
         new Setting(containerEl)
-            .setName('Show Assignees')
+            .setName('Show assignees')
             .setDesc('Display assignees section in modal (editable)')
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.modalDisplay.showAssignees)
@@ -511,7 +510,7 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
                 }));
 
         new Setting(containerEl)
-            .setName('Show Author')
+            .setName('Show author')
             .setDesc('Display author section in modal')
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.modalDisplay.showAuthor)
@@ -521,7 +520,7 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
                 }));
 
         new Setting(containerEl)
-            .setName('Show Reviewers')
+            .setName('Show reviewers')
             .setDesc('Display reviewers section for PRs in modal')
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.modalDisplay.showReviewers)
@@ -531,7 +530,7 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
                 }));
 
         new Setting(containerEl)
-            .setName('Show Milestone')
+            .setName('Show milestone')
             .setDesc('Display milestone section in modal')
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.modalDisplay.showMilestone)
@@ -541,7 +540,7 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
                 }));
 
         new Setting(containerEl)
-            .setName('Show PR Changes')
+            .setName('Show PR changes')
             .setDesc('Display PR additions/deletions section in modal')
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.modalDisplay.showPRChanges)
@@ -551,7 +550,7 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
                 }));
 
         new Setting(containerEl)
-            .setName('Show Engagement')
+            .setName('Show engagement')
             .setDesc('Display comment and reaction counts in modal')
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.modalDisplay.showEngagement)
@@ -561,7 +560,7 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
                 }));
 
         new Setting(containerEl)
-            .setName('Show Timeline')
+            .setName('Show timeline')
             .setDesc('Display created/updated/closed/merged dates in modal')
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.modalDisplay.showTimeline)
@@ -571,7 +570,7 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
                 }));
 
         new Setting(containerEl)
-            .setName('Show Comments')
+            .setName('Show comments')
             .setDesc('Display comments section in modal')
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.modalDisplay.showComments)
@@ -581,10 +580,10 @@ export class GitHubProjectsSettingTab extends PluginSettingTab {
                 }));
 
         // Manual actions
-        containerEl.createEl('h3', { text: 'Actions' });
+        new Setting(containerEl).setName("Actions").setHeading();
 
         new Setting(containerEl)
-            .setName('Refresh Now')
+            .setName('Refresh now')
             .setDesc('Manually refresh project data from GitHub')
             .addButton(btn => btn
                 .setButtonText('Refresh')

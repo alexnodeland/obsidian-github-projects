@@ -42,20 +42,20 @@ export default class GitHubProjectsPlugin extends Plugin {
         );
 
         // Add ribbon icon
-        this.addRibbonIcon('layout-dashboard', 'Open GitHub Project', () => {
+        this.addRibbonIcon('layout-dashboard', 'Open GitHub project', () => {
             this.activateView();
         });
 
         // Register commands
         this.addCommand({
             id: 'open-project-board',
-            name: 'Open Project Board',
+            name: 'Open project board',
             callback: () => this.activateView()
         });
 
         this.addCommand({
             id: 'refresh-project',
-            name: 'Refresh Project Data',
+            name: 'Refresh project data',
             callback: async () => {
                 try {
                     await this.syncManager?.forceRefresh();
@@ -84,7 +84,7 @@ export default class GitHubProjectsPlugin extends Plugin {
         this.syncManager?.destroy();
 
         // Detach all views
-        this.app.workspace.detachLeavesOfType(VIEW_TYPE_PROJECT_BOARD);
+        
     }
 
     async loadSettings() {
