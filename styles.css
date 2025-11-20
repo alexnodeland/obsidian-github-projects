@@ -1485,17 +1485,227 @@
 
 /* Mobile responsive */
 @media (max-width: 768px) {
-  .project-board {
-    flex-direction: column;
+  /* Board container adjustments for mobile */
+  .board-container {
+    padding: 8px;
   }
 
+  /* Stack columns vertically on mobile */
+  .project-board {
+    flex-direction: column;
+    overflow-x: hidden;
+    overflow-y: auto;
+    gap: 12px;
+  }
+
+  /* Column adjustments for mobile */
   .kanban-column {
     flex: 1 1 auto;
     max-height: none;
+    min-height: 200px;
   }
 
+  /* Increase touch targets for mobile */
+  .kanban-card {
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  /* Global filters mobile optimization */
+  .global-filters {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+
+  .global-filters-header {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .global-search-input {
+    min-width: 100%;
+    width: 100%;
+  }
+
+  .project-switcher-dropdown {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .global-filters-summary {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  /* Column filters mobile */
+  .column-filters-bar {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .column-search-input {
+    width: 100%;
+  }
+
+  .filter-chips,
+  .sort-options {
+    gap: 4px;
+  }
+
+  /* Card detail modal mobile */
+  .modal.card-detail-modal,
+  .card-detail-modal.modal,
+  .card-detail-modal .modal {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  .card-detail-container {
+    padding: 8px;
+  }
+
+  .card-detail-main {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .card-detail-right {
+    border-left: none;
+    border-top: 1px solid var(--background-modifier-border);
+    padding-left: 0;
+    padding-top: 16px;
+  }
+
+  .card-detail-title {
+    font-size: 22px;
+  }
+
+  .card-detail-title-input {
+    font-size: 22px;
+  }
+
+  /* Field grid mobile */
   .fields-list {
     grid-template-columns: 1fr;
+  }
+
+  /* Project selector mobile */
+  .project-selector {
+    padding: 16px;
+  }
+
+  .project-selector-header h2 {
+    font-size: 20px;
+  }
+
+  .project-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .project-card {
+    min-height: 70px;
+  }
+
+  /* Toast notifications mobile */
+  .toast-container {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    max-width: 100%;
+  }
+
+  .toast {
+    min-width: 100%;
+  }
+
+  /* Empty state mobile */
+  .empty-state {
+    padding: 20px;
+  }
+
+  .empty-state-icon {
+    font-size: 36px;
+  }
+
+  .empty-state-message {
+    font-size: 14px;
+  }
+
+  /* Button spacing mobile */
+  .global-filters-toggle,
+  .clear-filters-button {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+}
+
+/* Extra small mobile devices */
+@media (max-width: 480px) {
+  /* Further reduce padding on very small screens */
+  .board-container {
+    padding: 4px;
+  }
+
+  .kanban-column {
+    padding: 8px;
+  }
+
+  .kanban-card {
+    padding: 12px;
+  }
+
+  /* Smaller text on tiny screens */
+  .card-title {
+    font-size: 13px;
+  }
+
+  .card-description {
+    font-size: 11px;
+  }
+
+  .column-header {
+    font-size: 13px;
+  }
+
+  /* Stack card metadata vertically on tiny screens */
+  .card-metadata {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  /* Reduce modal padding */
+  .card-detail-container {
+    padding: 4px;
+  }
+
+  .card-detail-title {
+    font-size: 18px;
+  }
+
+  .card-detail-title-input {
+    font-size: 18px;
+  }
+}
+
+/* Tablet and medium screens optimization */
+@media (min-width: 769px) and (max-width: 1024px) {
+  /* Optimize for tablet portrait mode */
+  .kanban-column {
+    flex: 0 0 280px;
+  }
+
+  .project-board {
+    gap: 12px;
+  }
+
+  .board-container {
+    padding: 12px;
+  }
+
+  /* Card detail modal for tablets */
+  .card-detail-main {
+    grid-template-columns: 1.5fr 1fr;
   }
 }
 
