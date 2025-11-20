@@ -1,5 +1,6 @@
 import tsParser from '@typescript-eslint/parser';
 import tsPlugin from '@typescript-eslint/eslint-plugin';
+import obsidianmd from 'eslint-plugin-obsidianmd';
 
 export default [
   {
@@ -15,11 +16,13 @@ export default [
   },
   {
     files: ['src/**/*.ts', 'src/**/*.tsx'],
+    ignores: ['src/__tests__/**/*', 'src/__mocks__/**/*'],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
         ecmaVersion: 2020,
         sourceType: 'module',
+        project: './tsconfig.json',
         ecmaFeatures: {
           jsx: true,
         },
@@ -29,6 +32,7 @@ export default [
     },
     plugins: {
       '@typescript-eslint': tsPlugin,
+      obsidianmd: obsidianmd,
     },
     rules: {
       // TypeScript specific rules - relaxed for existing codebase
@@ -47,11 +51,36 @@ export default [
       'no-console': 'off', // Allow console in plugin development
       'prefer-const': 'error',
       'no-var': 'error',
+
+      // Obsidian plugin recommended rules
+      ...obsidianmd.configs.recommended,
+
+      // Obsidian-specific rule customizations
+      'obsidianmd/ui/sentence-case': ['warn', {
+        brands: ['GitHub'],
+        acronyms: ['API', 'URL', 'PR', 'ID', 'UI'],
+        allowAutoFix: true,
+      }],
     },
   },
   {
     // More relaxed rules for test and mock files
     files: ['src/__tests__/**/*', 'src/__mocks__/**/*'],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        ecmaVersion: 2020,
+        sourceType: 'module',
+        ecmaFeatures: {
+          jsx: true,
+        },
+        jsxFactory: 'h',
+        jsxFragmentFactory: 'Fragment',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': tsPlugin,
+    },
     rules: {
       '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/no-explicit-any': 'off',

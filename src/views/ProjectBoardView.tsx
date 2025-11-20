@@ -26,7 +26,7 @@ export class ProjectBoardView extends ItemView {
     }
 
     getDisplayText(): string {
-        return 'GitHub Project Board';
+        return 'GitHub project board';
     }
 
     getIcon(): string {

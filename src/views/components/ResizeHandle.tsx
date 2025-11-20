@@ -41,8 +41,7 @@ export const ResizeHandle = ({
                 onResizeStart();
             }
 
-            document.body.style.cursor = getCursor();
-            document.body.style.userSelect = 'none';
+            document.body.setCssProps({ cursor: getCursor(), userSelect: 'none' });
         };
 
         const handleMouseMove = (e: MouseEvent) => {
@@ -62,8 +61,7 @@ export const ResizeHandle = ({
             if (!isResizing.current) return;
 
             isResizing.current = false;
-            document.body.style.cursor = '';
-            document.body.style.userSelect = '';
+            document.body.setCssProps({ cursor: '', userSelect: '' });
 
             if (onResizeEnd) {
                 onResizeEnd();
