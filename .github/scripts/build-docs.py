@@ -7,31 +7,136 @@ from pathlib import Path
 
 # Minimal CSS - no external frameworks
 CSS = """
+:root {
+    --bg: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --text: #1a1a2e;
+    --text-muted: #6c757d;
+    --border: #e1e4e8;
+    --link: #0066cc;
+    --link-hover: #004499;
+    --code-bg: #f1f3f5;
+    --code-text: #d63384;
+    --pre-bg: #1e1e2e;
+    --pre-text: #cdd6f4;
+    --card-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    --card-hover-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg: #0d1117;
+        --bg-secondary: #161b22;
+        --text: #e6edf3;
+        --text-muted: #8b949e;
+        --border: #30363d;
+        --link: #58a6ff;
+        --link-hover: #79b8ff;
+        --code-bg: #21262d;
+        --code-text: #f97583;
+        --pre-bg: #161b22;
+        --pre-text: #c9d1d9;
+        --card-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        --card-hover-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    }
+}
+* { box-sizing: border-box; }
 body {
     max-width: 900px;
     margin: 0 auto;
     padding: 2rem;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.7;
+    color: var(--text);
+    background: var(--bg);
+}
+h1, h2, h3 {
+    margin-top: 2em;
+    margin-bottom: 0.5em;
+    font-weight: 600;
+    line-height: 1.3;
+}
+h1 { font-size: 2.25rem; }
+h2 { font-size: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.3em; }
+h3 { font-size: 1.25rem; }
+a { color: var(--link); text-decoration: none; transition: color 0.2s; }
+a:hover { color: var(--link-hover); text-decoration: underline; }
+p { margin: 1em 0; }
+code {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 0.2em 0.4em;
+    border-radius: 4px;
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: 0.875em;
+}
+pre {
+    background: var(--pre-bg);
+    color: var(--pre-text);
+    padding: 1.25em;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 0.875em;
     line-height: 1.6;
-    color: #333;
+    border: 1px solid var(--border);
 }
-@media (prefers-color-scheme: dark) {
-    body { background: #1a1a1a; color: #e0e0e0; }
-    a { color: #6b9eff; }
-    code { background: #2a2a2a; }
+pre code {
+    background: none;
+    color: inherit;
+    padding: 0;
+    font-size: inherit;
 }
-h1, h2, h3 { margin-top: 1.5em; }
-a { color: #0066cc; text-decoration: none; }
-a:hover { text-decoration: underline; }
-code { background: #f4f4f4; padding: 0.2em 0.4em; border-radius: 3px; font-size: 0.9em; }
-pre { background: #f4f4f4; padding: 1em; border-radius: 4px; overflow-x: auto; }
-pre code { background: none; padding: 0; }
-nav { border-bottom: 1px solid #ddd; padding-bottom: 1rem; margin-bottom: 2rem; }
-nav a { margin-right: 1.5rem; }
-.hero { text-align: center; margin: 3rem 0; }
-.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 2rem 0; }
-.card { border: 1px solid #ddd; padding: 1.5rem; border-radius: 8px; }
-.card h3 { margin-top: 0; }
+nav {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 1rem;
+    margin-bottom: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+}
+nav a {
+    padding: 0.25rem 0;
+    font-weight: 500;
+}
+.hero {
+    text-align: center;
+    margin: 3rem 0;
+    padding: 2rem;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+}
+.hero h1 { margin-top: 0; }
+.hero p { color: var(--text-muted); font-size: 1.125rem; }
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+.card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--card-hover-shadow);
+}
+.card h3 { margin-top: 0; margin-bottom: 0.5rem; }
+.card p { color: var(--text-muted); margin: 0.5rem 0 1rem; font-size: 0.95rem; }
+.card a { font-weight: 500; }
+ul, ol { padding-left: 1.5em; margin: 1em 0; }
+li { margin: 0.5em 0; }
+li strong { color: var(--text); }
+@media (max-width: 600px) {
+    body { padding: 1rem; }
+    h1 { font-size: 1.75rem; }
+    h2 { font-size: 1.25rem; }
+    .hero { padding: 1.5rem; margin: 2rem 0; }
+}
 """.strip()
 
 def simple_markdown_to_html(md_content):
